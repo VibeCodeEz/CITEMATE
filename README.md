@@ -1,36 +1,133 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CiteMate
 
-## Getting Started
+CiteMate is a student-focused citation and research workspace built with Next.js and Supabase. It helps college students save sources, generate citations, organize references by subject, write source-linked notes, and run a final plagiarism-prevention checklist before submission.
 
-First, run the development server:
+## Stack
+
+- Next.js App Router
+- TypeScript
+- Tailwind CSS
+- shadcn/ui
+- Supabase Auth, Postgres, and Storage
+- Zod
+- React Hook Form
+
+## Core Features
+
+- Email/password authentication with protected dashboard routes
+- Source library with search, filtering, tags, subjects, and attachments
+- Citation generator for APA 7, MLA 9, and Chicago
+- Source-linked note taking with multiline content
+- Academic writing checklist with saved progress
+- Dashboard with research stats, recent activity, and quick actions
+
+## Project Structure
+
+```text
+src/
+  actions/              Server actions for auth and feature mutations
+  app/                  Next.js routes, layouts, loading states, and API routes
+  components/
+    app/                App-specific UI blocks
+    ui/                 Shared shadcn/ui primitives
+  lib/
+    citations/          Citation formatting engine and tests
+    data/               Server-side data loaders
+    supabase/           Browser/server/middleware Supabase clients
+    validations/        Zod schemas
+  types/                App-level shared types
+supabase/
+  migrations/           SQL migration snapshot
+  schema.sql            Manual setup SQL for Supabase SQL Editor
+  seed.sql              Local sample data
+docs/
+  setup-checklist.md
+  deployment-vercel-supabase.md
+  future-improvements.md
+```
+
+## Environment Variables
+
+Copy `.env.example` to `.env.local` and set:
+
+| Variable | Required | Description |
+| --- | --- | --- |
+| `NEXT_PUBLIC_SUPABASE_URL` | Yes | Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes | Supabase anon public key |
+
+Important:
+
+- Do not add the Supabase service role key to this app.
+- Only the anon public key is needed in the Next.js runtime.
+- `.env*` files are ignored by git in this repo.
+
+## Local Setup
+
+1. Install dependencies.
+
+```bash
+npm install
+```
+
+2. Copy env vars.
+
+```bash
+cp .env.example .env.local
+```
+
+3. Create a Supabase project.
+
+4. In Supabase SQL Editor, run `supabase/schema.sql`.
+
+5. Optional for local sample data: run `supabase/seed.sql`.
+
+6. In Supabase Auth settings:
+   - enable email/password auth
+   - set Site URL to `http://localhost:3000`
+   - add `http://localhost:3000/auth/callback` to Redirect URLs
+
+7. Start the dev server.
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Verification
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Run the standard checks before shipping changes:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run lint
+npm run typecheck
+npm run test
+npm run build
+```
 
-## Learn More
+## Supabase Notes
 
-To learn more about Next.js, take a look at the following resources:
+- `supabase/schema.sql` is the recommended manual setup file for a fresh project.
+- `supabase/migrations/202603170001_initial_citemate_schema.sql` is kept in sync as the migration snapshot.
+- `supabase/seed.sql` is for local or staging sample data, not production content.
+- Row-level security is enabled for user-owned tables.
+- Source attachments are stored in the private `source-files` bucket with per-user policies.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Security Model
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Auth is handled with Supabase SSR helpers and Next.js middleware.
+- Protected dashboard routes redirect unauthenticated users to sign in.
+- Server actions always resolve the current authenticated user on the server.
+- Every user-owned table is protected with RLS policies.
+- Source file access is restricted through signed URLs and storage policies.
 
-## Deploy on Vercel
+## UX Notes
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Dedicated loading and error boundaries exist for dashboard feature areas.
+- Empty states are included for sources, notes, subjects, and checklist views.
+- Forms use Zod validation and friendly error messaging.
+- Layouts are responsive across desktop and mobile widths.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Additional Docs
+
+- [Setup checklist](./docs/setup-checklist.md)
+- [Vercel + Supabase deployment guide](./docs/deployment-vercel-supabase.md)
+- [Future improvements](./docs/future-improvements.md)
