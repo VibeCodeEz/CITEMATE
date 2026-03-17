@@ -1,13 +1,26 @@
 "use client";
 
-import { useId, useState, useTransition } from "react";
+import { useId, useRef, useState, useTransition } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useForm, useWatch } from "react-hook-form";
-import { Plus, SquarePen } from "lucide-react";
+import {
+  Bold,
+  Code2,
+  Eye,
+  Heading1,
+  Italic,
+  List,
+  ListOrdered,
+  PencilLine,
+  Plus,
+  Quote,
+  SquarePen,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { upsertNoteAction } from "@/actions/notes";
+import { NoteMarkdown } from "@/components/app/note-markdown";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -19,6 +32,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { applyNoteMarkdownAction, type NoteMarkdownAction } from "@/lib/notes/editor";
 import { noteSchema, type NoteInput } from "@/lib/validations/note";
 import type { Note, SourceWithRelations } from "@/types/app";
 
@@ -35,10 +49,25 @@ export function NoteFormDialog({
   lockedSourceId,
   lockedSourceTitle,
 }: NoteFormDialogProps) {
+  const formattingActions: Array<{
+    action: NoteMarkdownAction;
+    label: string;
+    icon: typeof Heading1;
+  }> = [
+    { action: "heading", label: "Heading", icon: Heading1 },
+    { action: "bold", label: "Bold", icon: Bold },
+    { action: "italic", label: "Italic", icon: Italic },
+    { action: "bulletList", label: "Bullet list", icon: List },
+    { action: "numberedList", label: "Numbered list", icon: ListOrdered },
+    { action: "blockquote", label: "Quote", icon: Quote },
+    { action: "codeBlock", label: "Code block", icon: Code2 },
+  ];
   const fieldId = useId();
   const router = useRouter();
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
+  const [editorMode, setEditorMode] = useState<"write" | "preview">("write");
   const isEditing = Boolean(note);
   const form = useForm<NoteInput>({
     resolver: zodResolver(noteSchema),
@@ -49,17 +78,56 @@ export function NoteFormDialog({
       sourceId: note?.source_id ?? lockedSourceId ?? undefined,
     },
   });
+  const contentField = form.register("content");
   const selectedSourceId = useWatch({
     control: form.control,
     name: "sourceId",
+  });
+  const noteContent = useWatch({
+    control: form.control,
+    name: "content",
   });
   const linkedSource =
     sources.find((source) => source.id === (lockedSourceId ?? selectedSourceId)) ??
     null;
 
+  function applyFormatting(action: NoteMarkdownAction) {
+    const textarea = textareaRef.current;
+
+    if (!textarea) {
+      return;
+    }
+
+    const nextState = applyNoteMarkdownAction(
+      form.getValues("content") ?? "",
+      {
+        start: textarea.selectionStart,
+        end: textarea.selectionEnd,
+      },
+      action,
+    );
+
+    form.setValue("content", nextState.value, {
+      shouldDirty: true,
+      shouldTouch: true,
+      shouldValidate: true,
+    });
+
+    window.requestAnimationFrame(() => {
+      textarea.focus();
+      textarea.setSelectionRange(nextState.selection.start, nextState.selection.end);
+    });
+  }
+
   return (
     <>
-      <Button variant={isEditing ? "outline" : "default"} onClick={() => setOpen(true)}>
+      <Button
+        variant={isEditing ? "outline" : "default"}
+        onClick={() => {
+          setEditorMode("write");
+          setOpen(true);
+        }}
+      >
         {isEditing ? <SquarePen className="size-4" /> : <Plus className="size-4" />}
         {isEditing ? "Edit" : "Add note"}
       </Button>
@@ -89,6 +157,7 @@ export function NoteFormDialog({
 
                 toast.success(result.message);
                 setOpen(false);
+                setEditorMode("write");
                 router.refresh();
               });
             })}
@@ -118,7 +187,8 @@ export function NoteFormDialog({
                 <Label htmlFor={`${fieldId}-source`}>Linked source</Label>
                 <select
                   id={`${fieldId}-source`}
-                  className="flex h-10 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                  className="block h-11 w-full min-w-0 rounded-lg border border-input bg-background px-3 pr-10 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                  title={linkedSource?.title ?? ""}
                   value={selectedSourceId ?? ""}
                   onChange={(event) =>
                     form.setValue("sourceId", event.target.value || undefined)
@@ -126,26 +196,113 @@ export function NoteFormDialog({
                 >
                   <option value="">No linked source</option>
                   {sources.map((source) => (
-                    <option key={source.id} value={source.id}>
+                    <option key={source.id} value={source.id} title={source.title}>
                       {source.title}
                     </option>
                   ))}
                 </select>
+                {linkedSource ? (
+                  <p className="text-xs leading-5 text-muted-foreground break-words">
+                    Selected: {linkedSource.title}
+                  </p>
+                ) : null}
               </div>
             )}
             <div className="space-y-2">
               <Label htmlFor={`${fieldId}-content`}>Note content</Label>
-              <div className="rounded-[1.5rem] border border-border/80 bg-secondary/20 p-3">
+              <div className="space-y-3 rounded-[1.5rem] border border-border/80 bg-secondary/20 p-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={editorMode === "write" ? "default" : "outline"}
+                      onClick={() => setEditorMode("write")}
+                    >
+                      <PencilLine className="size-4" />
+                      Write
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={editorMode === "preview" ? "default" : "outline"}
+                      onClick={() => setEditorMode("preview")}
+                    >
+                      <Eye className="size-4" />
+                      Preview
+                    </Button>
+                  </div>
+                  <p className="text-xs leading-5 text-muted-foreground">
+                    Markdown supported. Shortcuts: Ctrl/Cmd+B and Ctrl/Cmd+I.
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {formattingActions.map((item) => {
+                    const Icon = item.icon;
+
+                    return (
+                      <Button
+                        key={item.action}
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => applyFormatting(item.action)}
+                      >
+                        <Icon className="size-4" />
+                        {item.label}
+                      </Button>
+                    );
+                  })}
+                </div>
                 <p className="text-xs leading-5 text-muted-foreground">
-                  Multiline text is preserved. Use short paragraphs, quotes, and bullet-style lines for a readable study note.
+                  Existing plain-text notes still work. Add headings, emphasis, lists, quotes, and fenced code blocks when helpful.
                 </p>
               </div>
-              <Textarea
-                id={`${fieldId}-content`}
-                rows={12}
-                placeholder={"Key claim or takeaway\n\nImportant quote:\n\"...\"\n\nYour paraphrase or reflection"}
-                {...form.register("content")}
-              />
+              {editorMode === "write" ? (
+                <Textarea
+                  id={`${fieldId}-content`}
+                  ref={(element) => {
+                    textareaRef.current = element;
+                    contentField.ref(element);
+                  }}
+                  rows={12}
+                  placeholder={
+                    "## Main idea\n\n**Important quote**\n> ...\n\n- Key takeaway\n- Supporting detail\n\nYour reflection"
+                  }
+                  onKeyDown={(event) => {
+                    const isModifierKey = event.metaKey || event.ctrlKey;
+
+                    if (!isModifierKey) {
+                      return;
+                    }
+
+                    const key = event.key.toLowerCase();
+
+                    if (key === "b") {
+                      event.preventDefault();
+                      applyFormatting("bold");
+                    }
+
+                    if (key === "i") {
+                      event.preventDefault();
+                      applyFormatting("italic");
+                    }
+                  }}
+                  name={contentField.name}
+                  onBlur={contentField.onBlur}
+                  onChange={contentField.onChange}
+                />
+              ) : (
+                <div className="min-h-[18rem] rounded-[1.5rem] border border-border/80 bg-background/70 p-4">
+                  {(noteContent ?? "").trim() ? (
+                    <NoteMarkdown content={noteContent ?? ""} />
+                  ) : (
+                    <p className="text-sm leading-6 text-muted-foreground">
+                      Nothing to preview yet. Switch back to Write and add some note content.
+                    </p>
+                  )}
+                </div>
+              )}
               <p className="text-xs text-destructive">
                 {form.formState.errors.content?.message}
               </p>

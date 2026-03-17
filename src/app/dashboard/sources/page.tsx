@@ -3,8 +3,9 @@ import { Search } from "lucide-react";
 
 import { EmptyState } from "@/components/app/empty-state";
 import { PageHeader } from "@/components/app/page-header";
-import { SourceCard } from "@/components/app/source-card";
 import { SourceFormDialog } from "@/components/app/source-form-dialog";
+import { SourceImportDialog } from "@/components/app/source-import-dialog";
+import { SourcesCollection } from "@/components/app/sources-collection";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -25,7 +26,7 @@ type SourcesPageProps = {
 
 export default async function SourcesPage({ searchParams }: SourcesPageProps) {
   const filters = await searchParams;
-  const { sources, subjects, summary, availableYears, availableTags } =
+  const { sources, subjects, allSources, summary, availableYears, availableTags } =
     await getSourcesData(filters);
 
   return (
@@ -34,9 +35,14 @@ export default async function SourcesPage({ searchParams }: SourcesPageProps) {
         eyebrow="Library"
         title="Sources"
         description="Save, search, filter, and edit your references in one organized workspace with subjects, tags, and citation preferences."
-        actions={<SourceFormDialog subjects={subjects} />}
+        actions={
+          <>
+            <SourceImportDialog existingSources={allSources} />
+            <SourceFormDialog subjects={subjects} />
+          </>
+        }
       />
-      <section className="grid gap-4 md:grid-cols-3">
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <Card className="border-border/70 bg-card/90">
           <CardContent className="space-y-2 py-6">
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
@@ -64,8 +70,8 @@ export default async function SourcesPage({ searchParams }: SourcesPageProps) {
       </section>
       <Card className="border-border/70 bg-card/90">
         <CardContent className="space-y-4 py-5">
-          <form className="grid gap-3 xl:grid-cols-6">
-            <div className="relative xl:col-span-2">
+          <form className="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
+            <div className="relative md:col-span-2 xl:col-span-2">
               <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 name="q"
@@ -151,7 +157,12 @@ export default async function SourcesPage({ searchParams }: SourcesPageProps) {
         <EmptyState
           title="No sources found"
           description="Create your first source or adjust the current filters to expand the list."
-          action={<SourceFormDialog subjects={subjects} />}
+          action={
+            <div className="flex flex-wrap gap-3">
+              <SourceImportDialog existingSources={allSources} />
+              <SourceFormDialog subjects={subjects} />
+            </div>
+          }
         />
       ) : (
         <div className="space-y-4">
@@ -170,11 +181,7 @@ export default async function SourcesPage({ searchParams }: SourcesPageProps) {
               </Badge>
             ) : null}
           </div>
-          <div className="grid gap-5">
-            {sources.map((source) => (
-              <SourceCard key={source.id} source={source} subjects={subjects} />
-            ))}
-          </div>
+          <SourcesCollection sources={sources} subjects={subjects} />
         </div>
       )}
     </div>

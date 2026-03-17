@@ -1,5 +1,6 @@
 import Link from "next/link";
 import {
+  AlertTriangle,
   ArrowRight,
   BookOpenText,
   CheckCircle2,
@@ -56,7 +57,7 @@ function formatDateLabel(value: string) {
 }
 
 export default async function DashboardPage() {
-  const { recentNotes, recentSources, stats } = await getDashboardData();
+  const { recentSources, reminders, stats } = await getDashboardData();
 
   return (
     <div className="space-y-8">
@@ -140,6 +141,11 @@ export default async function DashboardPage() {
               value: `${stats.checklistCompletion}%`,
               icon: ScanSearch,
             },
+            {
+              label: "Needs attention",
+              value: stats.reminders,
+              icon: AlertTriangle,
+            },
           ].map((stat) => {
             const Icon = stat.icon;
 
@@ -166,7 +172,7 @@ export default async function DashboardPage() {
 
       <section className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
         <Card className="border-border/70 bg-card/90">
-          <CardHeader className="flex flex-row items-end justify-between gap-4">
+          <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div className="space-y-1">
               <CardTitle className="font-serif text-3xl tracking-tight">
                 Recent sources
@@ -207,12 +213,12 @@ export default async function DashboardPage() {
                           {source.year ?? "n.d."}
                         </Badge>
                       </div>
-                      <h3 className="font-semibold leading-6">{source.title}</h3>
+                      <h3 className="break-words font-semibold leading-6">{source.title}</h3>
                       <p className="text-sm leading-6 text-muted-foreground">
                         {source.authors.join(", ")}
                       </p>
                     </div>
-                    <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+                    <p className="shrink-0 text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
                       {formatDateLabel(source.created_at)}
                     </p>
                   </div>
@@ -223,52 +229,54 @@ export default async function DashboardPage() {
         </Card>
 
         <Card className="border-border/70 bg-card/90">
-          <CardHeader className="flex flex-row items-end justify-between gap-4">
+          <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div className="space-y-1">
               <CardTitle className="font-serif text-3xl tracking-tight">
-                Recent notes
+                Needs attention
               </CardTitle>
               <p className="text-sm leading-6 text-muted-foreground">
-                Pick up your latest reading thoughts quickly.
+                Quick fixes for incomplete citation and source details.
               </p>
             </div>
             <Button variant="outline" asChild>
-              <Link href="/dashboard/notes">View all</Link>
+              <Link href="/dashboard/needs-attention">View all</Link>
             </Button>
           </CardHeader>
           <CardContent className="space-y-4">
-            {recentNotes.length === 0 ? (
+            {reminders.length === 0 ? (
               <EmptyState
-                title="No notes yet"
-                description="Use notes to track quotes, summaries, and working ideas while you read."
+                title="No active reminders"
+                description="Your current sources look complete enough to keep moving."
                 action={
                   <Button asChild>
-                    <Link href="/dashboard/notes">Open notes</Link>
+                    <Link href="/dashboard/needs-attention">Open reminders</Link>
                   </Button>
                 }
               />
             ) : (
-              recentNotes.map((note) => (
+              reminders.map((reminder) => (
                 <div
-                  key={note.id}
+                  key={reminder.id}
                   className="rounded-[1.5rem] border border-border/80 bg-secondary/30 p-4"
                 >
                   <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div className="space-y-2">
-                      <h3 className="font-semibold leading-6">{note.title}</h3>
-                      <p className="line-clamp-3 text-sm leading-6 text-muted-foreground">
-                        {note.content}
+                    <div className="min-w-0 space-y-2">
+                      <h3 className="break-words font-semibold leading-6">{reminder.sourceTitle}</h3>
+                      <p className="text-sm leading-6 text-muted-foreground">
+                        {reminder.description}
                       </p>
                     </div>
-                    <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
-                      {formatDateLabel(note.updated_at)}
-                    </p>
-                  </div>
-                  {note.source ? (
-                    <Badge variant="secondary" className="mt-3 rounded-full">
-                      {note.source.title}
+                    <Badge variant="outline" className="rounded-full">
+                      {reminder.title}
                     </Badge>
-                  ) : null}
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {reminder.subjectLabels.slice(0, 2).map((label) => (
+                      <Badge key={label} variant="secondary" className="rounded-full">
+                        {label}
+                      </Badge>
+                    ))}
+                  </div>
                 </div>
               ))
             )}
@@ -289,7 +297,7 @@ export default async function DashboardPage() {
             Built for research workflows
           </Badge>
         </div>
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {quickActions.map((item) => {
             const Icon = item.icon;
 

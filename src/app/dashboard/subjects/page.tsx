@@ -2,22 +2,24 @@ import { deleteSubjectAction } from "@/actions/subjects";
 import { DeleteButton } from "@/components/app/delete-button";
 import { EmptyState } from "@/components/app/empty-state";
 import { PageHeader } from "@/components/app/page-header";
+import { SubjectAnalyticsSection } from "@/components/app/subject-analytics-section";
 import { SubjectFormDialog } from "@/components/app/subject-form-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { getSubjectsData } from "@/lib/data/citemate";
 
 export default async function SubjectsPage() {
-  const subjects = await getSubjectsData();
+  const { subjects, analytics } = await getSubjectsData();
 
   return (
     <div className="space-y-8">
       <PageHeader
         eyebrow="Organization"
         title="Subjects"
-        description="Create categories for courses, seminars, or themes, then assign each source to one or more subjects."
+        description="Create categories for courses, seminars, or themes, then assign each source to one or more subjects and track how your research is distributed."
         actions={<SubjectFormDialog />}
       />
+      <SubjectAnalyticsSection analytics={analytics} />
       {subjects.length === 0 ? (
         <EmptyState
           title="No subjects created yet"
@@ -25,7 +27,7 @@ export default async function SubjectsPage() {
           action={<SubjectFormDialog />}
         />
       ) : (
-        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
           {subjects.map((subject) => (
             <Card key={subject.id} className="border-border/70 bg-card/90">
               <CardContent className="space-y-5 py-6">

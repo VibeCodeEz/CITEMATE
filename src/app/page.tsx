@@ -45,9 +45,9 @@ export default async function HomePage() {
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(15,118,110,0.16),_transparent_36%),linear-gradient(180deg,#fcfaf3_0%,#f3efe4_100%)] text-foreground">
       <div className="mx-auto flex min-h-screen max-w-7xl flex-col px-4 py-6 sm:px-6 lg:px-8">
-        <header className="flex items-center justify-between rounded-[2rem] border border-border/70 bg-background/85 px-5 py-4 shadow-lg shadow-teal-950/5 backdrop-blur">
+        <header className="flex flex-col gap-4 rounded-[2rem] border border-border/70 bg-background/85 px-4 py-4 shadow-lg shadow-teal-950/5 backdrop-blur sm:flex-row sm:items-center sm:justify-between sm:px-5">
           <AppLogo />
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <Button variant="outline" asChild>
               <Link href="/auth/sign-in">Sign in</Link>
             </Button>
@@ -58,22 +58,22 @@ export default async function HomePage() {
             </Button>
           </div>
         </header>
-        <section className="grid flex-1 items-center gap-10 py-16 lg:grid-cols-[1.2fr_0.8fr]">
+        <section className="grid flex-1 items-center gap-10 py-12 sm:py-16 lg:grid-cols-[1.2fr_0.8fr]">
           <div className="space-y-8">
             <div className="space-y-5">
               <p className="text-sm font-semibold uppercase tracking-[0.3em] text-muted-foreground">
                 Citation workflow for real student research
               </p>
-              <h1 className="max-w-4xl font-serif text-6xl leading-[0.95] tracking-tight text-balance">
+              <h1 className="max-w-4xl text-balance font-serif text-4xl leading-[0.95] tracking-tight sm:text-5xl lg:text-6xl">
                 Keep every source, note, and citation in a workspace that feels calm under pressure.
               </h1>
-              <p className="max-w-2xl text-lg leading-8 text-muted-foreground">
+              <p className="max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg sm:leading-8">
                 CiteMate helps you save academic sources, generate APA 7, MLA 9,
                 and Chicago citations, track notes, and run a final
                 plagiarism-ready review before submission.
               </p>
             </div>
-            <div className="flex flex-wrap items-center gap-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
               <Button size="lg" asChild>
                 <Link href={user ? "/dashboard" : "/auth/sign-up"}>
                   {user ? "Open dashboard" : "Create free workspace"}
@@ -91,7 +91,7 @@ export default async function HomePage() {
                 <p className="text-sm uppercase tracking-[0.24em] text-white/70">
                   Dashboard snapshot
                 </p>
-                <div className="mt-6 grid grid-cols-3 gap-3">
+                <div className="mt-6 grid gap-3 sm:grid-cols-3">
                   <div className="rounded-2xl bg-white/10 p-4">
                     <p className="text-xs uppercase tracking-[0.2em] text-white/70">
                       Workspace

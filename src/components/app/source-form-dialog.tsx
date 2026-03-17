@@ -4,10 +4,14 @@ import { useId, useState, useTransition } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
-import { Paperclip, Plus, SquarePen } from "lucide-react";
+import { LoaderCircle, Paperclip, Plus, Search, SquarePen } from "lucide-react";
 import { toast } from "sonner";
 
-import { attachSourceFileAction, upsertSourceAction } from "@/actions/sources";
+import {
+  attachSourceFileAction,
+  fetchSourceMetadataAction,
+  upsertSourceAction,
+} from "@/actions/sources";
 import { CitationPreview } from "@/components/app/citation-preview";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -21,6 +25,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  mergeMetadataIntoSourceForm,
+  metadataToSourceFormValues,
+  type SourceMetadataField,
+} from "@/lib/source-metadata/form";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import type { CitationSource } from "@/lib/citations/types";
 import {
@@ -41,11 +50,26 @@ export function SourceFormDialog({
   source,
   subjects,
 }: SourceFormDialogProps) {
+  const metadataFieldLabels: Record<SourceMetadataField, string> = {
+    title: "title",
+    authorsText: "authors",
+    year: "publication year",
+    journalOrPublisher: "journal or publisher",
+    doi: "DOI",
+    url: "URL",
+    abstract: "abstract",
+    sourceType: "source type",
+  };
   const fieldId = useId();
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [pending, startTransition] = useTransition();
+  const [savePending, startSaveTransition] = useTransition();
+  const [metadataPending, startMetadataTransition] = useTransition();
   const [file, setFile] = useState<File | null>(null);
+  const [metadataStatus, setMetadataStatus] = useState<{
+    tone: "success" | "error" | "info";
+    message: string;
+  } | null>(null);
   const isEditing = Boolean(source);
   const form = useForm<SourceInput>({
     resolver: zodResolver(sourceSchema),
@@ -78,6 +102,91 @@ export function SourceFormDialog({
       previewValues.citationStylePreference ?? "apa",
   };
 
+  const handleFetchMetadata = () => {
+    setMetadataStatus({
+      tone: "info",
+      message: "Looking up citation metadata...",
+    });
+
+    startMetadataTransition(async () => {
+      const lookupValues = form.getValues();
+      const result = await fetchSourceMetadataAction({
+        doi: lookupValues.doi,
+        url: lookupValues.url,
+      });
+
+      if (!result.success || !result.data) {
+        toast.error(result.message);
+        Object.entries(result.fieldErrors ?? {}).forEach(([name, messages]) => {
+          form.setError(name as keyof SourceInput, {
+            message: messages?.[0],
+          });
+        });
+        setMetadataStatus({
+          tone: "error",
+          message: result.message,
+        });
+        return;
+      }
+
+      const fetchedValues = metadataToSourceFormValues(result.data.metadata);
+      const currentValues = form.getValues();
+      let mergeResult = mergeMetadataIntoSourceForm(
+        currentValues,
+        fetchedValues,
+        form.formState.dirtyFields as Record<SourceMetadataField, boolean>,
+      );
+
+      if (mergeResult.conflictingFields.length > 0) {
+        const labels = mergeResult.conflictingFields
+          .map((fieldName) => metadataFieldLabels[fieldName])
+          .join(", ");
+        const confirmed = window.confirm(
+          `Replace your manually edited fields with fetched metadata for: ${labels}?`,
+        );
+
+        if (confirmed) {
+          mergeResult = mergeMetadataIntoSourceForm(
+            form.getValues(),
+            fetchedValues,
+            form.formState.dirtyFields as Record<SourceMetadataField, boolean>,
+            true,
+          );
+        }
+      }
+
+      Object.entries(mergeResult.nextValues).forEach(([name, value]) => {
+        form.setValue(name as keyof SourceInput, value as never, {
+          shouldDirty: false,
+          shouldTouch: true,
+          shouldValidate: true,
+        });
+      });
+
+      const skippedCount = mergeResult.conflictingFields.length;
+
+      if (mergeResult.appliedFields.length === 0 && skippedCount === 0) {
+        setMetadataStatus({
+          tone: "success",
+          message: "Metadata found, but your form already has those values.",
+        });
+        toast.success("Metadata fetched. No changes were needed.");
+        return;
+      }
+
+      const statusMessage =
+        skippedCount > 0
+          ? `Filled ${mergeResult.appliedFields.length} field${mergeResult.appliedFields.length === 1 ? "" : "s"} and kept ${skippedCount} manual edit${skippedCount === 1 ? "" : "s"}.`
+          : `Filled ${mergeResult.appliedFields.length} field${mergeResult.appliedFields.length === 1 ? "" : "s"} from fetched metadata.`;
+
+      setMetadataStatus({
+        tone: "success",
+        message: statusMessage,
+      });
+      toast.success(statusMessage);
+    });
+  };
+
   return (
     <>
       <Button variant={isEditing ? "outline" : "default"} onClick={() => setOpen(true)}>
@@ -85,7 +194,7 @@ export function SourceFormDialog({
         {isEditing ? "Edit" : "Add source"}
       </Button>
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-3xl">
+        <DialogContent className="max-h-[92vh] p-4 sm:max-w-5xl sm:p-6 xl:max-w-6xl">
           <DialogHeader>
             <DialogTitle>{isEditing ? "Edit source" : "Add a source"}</DialogTitle>
             <DialogDescription>
@@ -93,9 +202,9 @@ export function SourceFormDialog({
             </DialogDescription>
           </DialogHeader>
           <form
-            className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]"
+            className="grid items-start gap-6 2xl:grid-cols-[minmax(0,1.1fr)_minmax(20rem,0.9fr)]"
             onSubmit={form.handleSubmit((values) => {
-              startTransition(async () => {
+              startSaveTransition(async () => {
                 const result = await upsertSourceAction(values);
 
                 if (!result.success) {
@@ -133,6 +242,8 @@ export function SourceFormDialog({
                       result.data.sourceId,
                       filePath,
                       file.name,
+                      file.type,
+                      file.size,
                     );
 
                     if (!attachResult.success) {
@@ -149,7 +260,7 @@ export function SourceFormDialog({
               });
             })}
           >
-            <div className="space-y-4">
+            <div className="space-y-5">
               <div className="space-y-2">
                 <Label htmlFor={`${fieldId}-title`}>Title</Label>
                 <Input id={`${fieldId}-title`} {...form.register("title")} />
@@ -225,6 +336,9 @@ export function SourceFormDialog({
                 <div className="space-y-2">
                   <Label htmlFor={`${fieldId}-doi`}>DOI</Label>
                   <Input id={`${fieldId}-doi`} {...form.register("doi")} />
+                  <p className="text-xs text-destructive">
+                    {form.formState.errors.doi?.message}
+                  </p>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor={`${fieldId}-url`}>URL</Label>
@@ -233,6 +347,43 @@ export function SourceFormDialog({
                     {form.formState.errors.url?.message}
                   </p>
                 </div>
+              </div>
+              <div className="space-y-3 rounded-[1.5rem] border border-border/80 bg-secondary/20 p-4">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium">Metadata lookup</p>
+                    <p className="text-xs leading-5 text-muted-foreground">
+                      Paste a DOI or article URL to auto-fill citation fields before saving.
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleFetchMetadata}
+                    disabled={
+                      metadataPending ||
+                      (!previewValues.doi?.trim() && !previewValues.url?.trim())
+                    }
+                  >
+                    {metadataPending ? (
+                      <LoaderCircle className="size-4 animate-spin" />
+                    ) : (
+                      <Search className="size-4" />
+                    )}
+                    {metadataPending ? "Fetching..." : "Fetch metadata"}
+                  </Button>
+                </div>
+                {metadataStatus ? (
+                  <p
+                    className={
+                      metadataStatus.tone === "error"
+                        ? "text-sm text-destructive"
+                        : "text-sm text-muted-foreground"
+                    }
+                  >
+                    {metadataStatus.message}
+                  </p>
+                ) : null}
               </div>
               <div className="space-y-2">
                 <Label htmlFor={`${fieldId}-tags`}>Tags</Label>
@@ -311,11 +462,11 @@ export function SourceFormDialog({
                 />
                 <p className="flex items-center gap-2 text-xs text-muted-foreground">
                   <Paperclip className="size-3.5" />
-                  Optional. Stored securely in Supabase Storage.
+                  Optional. PDFs can be previewed inside the source page. Files are stored securely in Supabase Storage.
                 </p>
               </div>
-              <Button type="submit" className="w-full" disabled={pending}>
-                {pending
+              <Button type="submit" className="w-full" disabled={savePending}>
+                {savePending
                   ? isEditing
                     ? "Saving..."
                     : "Saving source..."
@@ -324,7 +475,7 @@ export function SourceFormDialog({
                     : "Save source"}
               </Button>
             </div>
-            <div className="space-y-4">
+            <div className="space-y-4 2xl:sticky 2xl:top-0">
               <div className="rounded-3xl border border-border/70 bg-secondary/30 p-4">
                 <h3 className="font-serif text-2xl tracking-tight">
                   Citation preview

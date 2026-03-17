@@ -1,7 +1,7 @@
 import { deleteNoteAction } from "@/actions/notes";
+import { NoteMarkdown } from "@/components/app/note-markdown";
 import { DeleteButton } from "@/components/app/delete-button";
 import { NoteFormDialog } from "@/components/app/note-form-dialog";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import type { Note, SourceWithRelations } from "@/types/app";
 
@@ -34,27 +34,28 @@ export function NoteCard({
   return (
     <Card className="border-border/70 bg-card/90">
       <CardContent className={compact ? "space-y-4 py-5" : "space-y-4 py-6"}>
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="space-y-3">
-            <div>
-              <h2
-                className={
-                  compact
-                    ? "font-serif text-2xl tracking-tight"
-                    : "font-serif text-3xl tracking-tight"
-                }
+        <div className="space-y-4">
+          <div className="min-w-0 space-y-3">
+            <h2
+              className={
+                compact
+                  ? "break-words font-serif text-2xl tracking-tight"
+                  : "break-words font-serif text-3xl tracking-tight"
+              }
+            >
+              {note.title}
+            </h2>
+            {lockedSource ? null : linkedSource ? (
+              <div
+                className="w-full max-w-full rounded-full border border-border/80 bg-secondary/40 px-3 py-2 text-sm leading-5 text-muted-foreground break-words"
+                title={linkedSource.title}
               >
-                {note.title}
-              </h2>
-              {lockedSource ? null : linkedSource ? (
-                <Badge variant="secondary" className="mt-3 rounded-full">
-                  {linkedSource.title}
-                </Badge>
-              ) : null}
-            </div>
-            <div className="flex flex-wrap gap-2 text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
-              <span>Created {formatTimestamp(note.created_at)}</span>
-              <span>Updated {formatTimestamp(note.updated_at)}</span>
+                {linkedSource.title}
+              </div>
+            ) : null}
+            <div className="grid gap-1 text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground sm:flex sm:flex-wrap sm:gap-3">
+              <span className="break-words">Created {formatTimestamp(note.created_at)}</span>
+              <span className="break-words">Updated {formatTimestamp(note.updated_at)}</span>
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -71,10 +72,8 @@ export function NoteCard({
             />
           </div>
         </div>
-        <div className="rounded-[1.5rem] border border-border/80 bg-secondary/25 p-4">
-          <p className="whitespace-pre-wrap text-sm leading-7 text-muted-foreground">
-            {note.content}
-          </p>
+        <div className="min-w-0 overflow-hidden rounded-[1.5rem] border border-border/80 bg-secondary/25 p-4">
+          <NoteMarkdown content={note.content} className="break-words" />
         </div>
       </CardContent>
     </Card>

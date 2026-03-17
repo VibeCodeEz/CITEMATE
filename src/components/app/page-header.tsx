@@ -14,15 +14,15 @@ export function PageHeader({
   actions,
 }: PageHeaderProps) {
   return (
-    <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-      <div className="space-y-2">
+    <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+      <div className="min-w-0 space-y-2">
         {eyebrow ? (
           <p className="text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground">
             {eyebrow}
           </p>
         ) : null}
         <div className="space-y-1">
-          <h1 className="font-serif text-4xl leading-none tracking-tight text-foreground">
+          <h1 className="break-words font-serif text-3xl leading-none tracking-tight text-foreground sm:text-4xl">
             {title}
           </h1>
           <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
@@ -30,7 +30,7 @@ export function PageHeader({
           </p>
         </div>
       </div>
-      {actions ? <div className="flex items-center gap-3">{actions}</div> : null}
+      {actions ? <div className="flex flex-wrap items-center gap-3">{actions}</div> : null}
     </div>
   );
 }

@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { CopyButton } from "@/components/app/copy-button";
+import { SourceExportActions } from "@/components/app/source-export-actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -53,7 +54,10 @@ export function CitationGeneratorPanel({
         <div className="rounded-3xl border border-border/80 bg-background/70 p-5">
           <p className="text-sm leading-7">{citation}</p>
         </div>
-        <CopyButton text={citation} />
+        <div className="flex flex-wrap items-center gap-2">
+          <CopyButton text={citation} />
+          <SourceExportActions sources={[source]} />
+        </div>
       </CardContent>
     </Card>
   );

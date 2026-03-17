@@ -118,6 +118,37 @@ export type Database = {
           },
         ];
       };
+      source_reminder_dismissals: {
+        Row: {
+          dismissed_at: string;
+          reminder_key: string;
+          source_id: string;
+          source_updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          dismissed_at?: string;
+          reminder_key: string;
+          source_id: string;
+          source_updated_at: string;
+          user_id: string;
+        };
+        Update: {
+          dismissed_at?: string;
+          reminder_key?: string;
+          source_id?: string;
+          source_updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "source_reminder_dismissals_source_id_fkey";
+            columns: ["source_id"];
+            referencedRelation: "sources";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       profiles: {
         Row: {
           created_at: string;
@@ -182,6 +213,9 @@ export type Database = {
           doi: string | null;
           file_name: string | null;
           file_path: string | null;
+          file_size_bytes: number | null;
+          file_type: string | null;
+          file_uploaded_at: string | null;
           id: string;
           publisher: string | null;
           source_type: Database["public"]["Enums"]["source_type"];
@@ -200,6 +234,9 @@ export type Database = {
           doi?: string | null;
           file_name?: string | null;
           file_path?: string | null;
+          file_size_bytes?: number | null;
+          file_type?: string | null;
+          file_uploaded_at?: string | null;
           id?: string;
           publisher?: string | null;
           source_type?: Database["public"]["Enums"]["source_type"];
@@ -218,6 +255,9 @@ export type Database = {
           doi?: string | null;
           file_name?: string | null;
           file_path?: string | null;
+          file_size_bytes?: number | null;
+          file_type?: string | null;
+          file_uploaded_at?: string | null;
           id?: string;
           publisher?: string | null;
           source_type?: Database["public"]["Enums"]["source_type"];

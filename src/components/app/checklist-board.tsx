@@ -70,7 +70,7 @@ export function ChecklistBoard({ items }: ChecklistBoardProps) {
 
   return (
     <div className="space-y-6">
-      <section className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr_0.8fr]">
+      <section className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr_0.8fr]">
         <Card className="border-border/70 bg-card/90">
           <CardHeader className="space-y-3">
             <div className="flex items-center gap-3">
@@ -199,7 +199,7 @@ export function ChecklistBoard({ items }: ChecklistBoardProps) {
                   }}
                 />
                 <div className="min-w-0 flex-1 space-y-3">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                     <div className="space-y-2">
                       <div className="flex flex-wrap items-center gap-2">
                         <Badge variant="outline" className="rounded-full">
@@ -216,7 +216,7 @@ export function ChecklistBoard({ items }: ChecklistBoardProps) {
                         {item.label}
                       </h3>
                     </div>
-                    <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+                    <p className="shrink-0 text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
                       {formatTimestamp(item.progress_updated_at)}
                     </p>
                   </div>

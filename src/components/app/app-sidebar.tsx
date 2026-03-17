@@ -4,7 +4,7 @@ import { NavLink } from "@/components/app/nav-link";
 export function AppSidebar() {
   return (
     <>
-      <nav className="flex flex-wrap gap-2 lg:hidden">
+      <nav className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-2 lg:hidden">
         {dashboardNavItems.map((item) => {
           const Icon = item.icon;
 

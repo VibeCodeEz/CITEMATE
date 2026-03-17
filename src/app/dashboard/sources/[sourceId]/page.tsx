@@ -14,6 +14,7 @@ import { EmptyState } from "@/components/app/empty-state";
 import { NoteCard } from "@/components/app/note-card";
 import { NoteFormDialog } from "@/components/app/note-form-dialog";
 import { PageHeader } from "@/components/app/page-header";
+import { SourceAttachmentPanel } from "@/components/app/source-attachment-panel";
 import { SourceFormDialog } from "@/components/app/source-form-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -64,7 +65,7 @@ export default async function SourceDetailsPage({
           </>
         }
       />
-      <section className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
+      <section className="grid gap-6 2xl:grid-cols-[1.05fr_0.95fr]">
         <div className="space-y-6">
           <Card className="border-border/70 bg-card/90">
             <CardHeader className="space-y-4">
@@ -156,6 +157,15 @@ export default async function SourceDetailsPage({
               </div>
             </CardContent>
           </Card>
+          {source.file_path && source.file_name ? (
+            <SourceAttachmentPanel
+              sourceId={source.id}
+              fileName={source.file_name}
+              fileType={source.file_type}
+              fileSizeBytes={source.file_size_bytes}
+              fileUploadedAt={source.file_uploaded_at}
+            />
+          ) : null}
           <Card className="border-border/70 bg-card/90">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 font-serif text-3xl tracking-tight">
@@ -169,7 +179,7 @@ export default async function SourceDetailsPage({
               </p>
             </CardContent>
           </Card>
-          <div className="grid gap-6 lg:grid-cols-2">
+          <div className="grid gap-6 xl:grid-cols-2">
             <Card className="border-border/70 bg-card/90">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 font-serif text-3xl tracking-tight">
@@ -193,7 +203,7 @@ export default async function SourceDetailsPage({
                 )}
               </CardContent>
             </Card>
-            <Card className="border-border/70 bg-card/90 lg:col-span-2">
+            <Card className="border-border/70 bg-card/90 xl:col-span-2">
               <CardHeader>
                 <div className="flex flex-wrap items-center justify-between gap-4">
                   <CardTitle className="flex items-center gap-2 font-serif text-3xl tracking-tight">

@@ -22,7 +22,7 @@ export default async function NotesPage() {
           action={<NoteFormDialog sources={sources} />}
         />
       ) : (
-        <div className="grid gap-5 lg:grid-cols-2">
+        <div className="grid gap-5 xl:grid-cols-2">
           {notes.map((note) => (
             <NoteCard key={note.id} note={note} sources={sources} />
           ))}

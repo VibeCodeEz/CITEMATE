@@ -1,11 +1,14 @@
 import { cache } from "react";
 
+import { calculateWorkspaceAnalytics } from "@/lib/analytics/workspace";
+import { getWorkspaceSourceReminders } from "@/lib/reminders/source-reminders";
 import { requireUser } from "@/lib/auth";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type {
   ChecklistItemWithProgress,
   Note,
   Source,
+  SourceReminderDismissal,
   SourceWithRelations,
   Subject,
   SubjectWithCount,
@@ -35,7 +38,14 @@ async function getWorkspaceCollections() {
   const user = await requireUser();
   const supabase = await createSupabaseServerClient();
 
-  const [profileResult, subjectsResult, sourcesResult, linksResult, notesResult] =
+  const [
+    profileResult,
+    subjectsResult,
+    sourcesResult,
+    linksResult,
+    notesResult,
+    reminderDismissalsResult,
+  ] =
     await Promise.all([
       supabase.from("profiles").select("*").eq("id", user.id).maybeSingle(),
       supabase.from("subjects").select("*").eq("user_id", user.id).order("name"),
@@ -50,6 +60,10 @@ async function getWorkspaceCollections() {
         .select("*")
         .eq("user_id", user.id)
         .order("updated_at", { ascending: false }),
+      supabase
+        .from("source_reminder_dismissals")
+        .select("*")
+        .eq("user_id", user.id),
     ]);
 
   if (profileResult.error) throw profileResult.error;
@@ -57,6 +71,7 @@ async function getWorkspaceCollections() {
   if (sourcesResult.error) throw sourcesResult.error;
   if (linksResult.error) throw linksResult.error;
   if (notesResult.error) throw notesResult.error;
+  if (reminderDismissalsResult.error) throw reminderDismissalsResult.error;
 
   return {
     profile: profileResult.data,
@@ -64,6 +79,7 @@ async function getWorkspaceCollections() {
     sources: sourcesResult.data ?? [],
     sourceLinks: linksResult.data ?? [],
     notes: notesResult.data ?? [],
+    reminderDismissals: reminderDismissalsResult.data ?? [],
     user,
   };
 }
@@ -181,17 +197,22 @@ export const getWorkspaceData = cache(async () => {
     source:
       hydratedSources.find((source) => source.id === note.source_id) ?? null,
   }));
+  const sourceReminders = getWorkspaceSourceReminders({
+    sources: hydratedSources,
+    dismissals: workspace.reminderDismissals as SourceReminderDismissal[],
+  });
 
   return {
     ...workspace,
     hydratedSources,
     subjectsWithCount,
     notesWithSource,
+    sourceReminders,
   };
 });
 
 export async function getDashboardData() {
-  const [{ hydratedSources, notesWithSource, subjectsWithCount }, checklistItems] =
+  const [{ hydratedSources, notesWithSource, subjectsWithCount, sourceReminders }, checklistItems] =
     await Promise.all([getWorkspaceData(), getChecklistData()]);
   const checklistCompleted = checklistItems.filter((item) => item.completed).length;
   const checklistTotal = checklistItems.length;
@@ -208,9 +229,11 @@ export async function getDashboardData() {
       checklistCompleted,
       checklistTotal,
       checklistCompletion,
+      reminders: sourceReminders.length,
     },
     recentSources: hydratedSources.slice(0, 5),
     recentNotes: notesWithSource.slice(0, 5),
+    reminders: sourceReminders.slice(0, 5),
   };
 }
 
@@ -233,6 +256,7 @@ export async function getSourcesData(filters: SourceFilters = {}) {
   return {
     subjects: subjectsWithCount,
     sources: filteredSources,
+    allSources: hydratedSources,
     summary: {
       total: hydratedSources.length,
       filtered: filteredSources.length,
@@ -257,9 +281,16 @@ export async function getSourceDetailsData(sourceId: string) {
 }
 
 export async function getSubjectsData() {
-  const { subjectsWithCount } = await getWorkspaceData();
+  const { subjectsWithCount, hydratedSources, notes } = await getWorkspaceData();
 
-  return subjectsWithCount;
+  return {
+    subjects: subjectsWithCount,
+    analytics: calculateWorkspaceAnalytics({
+      sources: hydratedSources,
+      subjects: subjectsWithCount,
+      notes,
+    }),
+  };
 }
 
 export async function getNotesData() {
@@ -306,5 +337,24 @@ export async function getDashboardShellData() {
   return {
     email: user.email ?? profile?.email ?? "",
     fullName: profile?.full_name || user.user_metadata.full_name || "Student",
+  };
+}
+
+export async function getNeedsAttentionData() {
+  const { sourceReminders } = await getWorkspaceData();
+
+  return {
+    reminders: sourceReminders,
+    summary: {
+      total: sourceReminders.length,
+      withAbstractReminder: sourceReminders.filter(
+        (reminder) => reminder.key === "missing_abstract",
+      ).length,
+      withLinkReminder: sourceReminders.filter(
+        (reminder) =>
+          reminder.key === "missing_link" ||
+          reminder.key === "missing_website_url",
+      ).length,
+    },
   };
 }

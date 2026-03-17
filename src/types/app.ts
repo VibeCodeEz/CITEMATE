@@ -10,6 +10,8 @@ export type Note = Database["public"]["Tables"]["notes"]["Row"];
 export type ChecklistItem = Database["public"]["Tables"]["checklist_items"]["Row"];
 export type ChecklistProgress =
   Database["public"]["Tables"]["checklist_progress"]["Row"];
+export type SourceReminderDismissal =
+  Database["public"]["Tables"]["source_reminder_dismissals"]["Row"];
 
 export type SourceWithRelations = Source & {
   subjects: Subject[];

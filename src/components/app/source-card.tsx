@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { ExternalLink, FileText, NotebookPen } from "lucide-react";
 
 import { deleteSourceAction } from "@/actions/sources";
@@ -28,49 +28,57 @@ import type {
 type SourceCardProps = {
   source: SourceWithRelations;
   subjects: SubjectWithCount[];
+  selectionControl?: ReactNode;
 };
 
-export function SourceCard({ source, subjects }: SourceCardProps) {
+export function SourceCard({
+  source,
+  subjects,
+  selectionControl,
+}: SourceCardProps) {
   const [style, setStyle] = useState<CitationStyle>(source.citation_style);
   const citation = formatCitation(source, style);
 
   return (
     <Card className="border-border/70 bg-card/90 shadow-sm shadow-teal-950/5">
       <CardHeader className="gap-4">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div className="space-y-3">
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="outline" className="rounded-full">
-                {getSourceTypeLabel(source.source_type)}
-              </Badge>
-              {source.subjects.map((subject) => (
-                <Badge
-                  key={subject.id}
-                  variant="secondary"
-                  className="rounded-full"
-                  style={{
-                    backgroundColor: `${subject.color}1A`,
-                    color: subject.color,
-                    borderColor: `${subject.color}40`,
-                  }}
-                >
-                  {subject.name}
+        <div className="flex flex-col gap-4">
+          <div className="flex items-start gap-3">
+            {selectionControl ? <div className="pt-1">{selectionControl}</div> : null}
+            <div className="min-w-0 space-y-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant="outline" className="rounded-full">
+                  {getSourceTypeLabel(source.source_type)}
                 </Badge>
-              ))}
+                {source.subjects.map((subject) => (
+                  <Badge
+                    key={subject.id}
+                    variant="secondary"
+                    className="rounded-full"
+                    style={{
+                      backgroundColor: `${subject.color}1A`,
+                      color: subject.color,
+                      borderColor: `${subject.color}40`,
+                    }}
+                  >
+                    {subject.name}
+                  </Badge>
+                ))}
+              </div>
+              <CardTitle className="break-words font-serif text-2xl leading-tight">
+                <Link
+                  href={`/dashboard/sources/${source.id}`}
+                  className="break-words transition-colors hover:text-primary"
+                >
+                  {source.title}
+                </Link>
+              </CardTitle>
+              <p className="text-sm leading-6 text-muted-foreground">
+                {source.authors.join(", ")}
+                {source.year ? ` | ${source.year}` : ""}
+                {source.publisher ? ` | ${source.publisher}` : ""}
+              </p>
             </div>
-            <CardTitle className="font-serif text-2xl leading-tight">
-              <Link
-                href={`/dashboard/sources/${source.id}`}
-                className="transition-colors hover:text-primary"
-              >
-                {source.title}
-              </Link>
-            </CardTitle>
-            <p className="text-sm leading-6 text-muted-foreground">
-              {source.authors.join(", ")}
-              {source.year ? ` | ${source.year}` : ""}
-              {source.publisher ? ` | ${source.publisher}` : ""}
-            </p>
           </div>
           <div className="flex flex-wrap gap-2">
             <SourceFormDialog source={source} subjects={subjects} />
@@ -84,7 +92,7 @@ export function SourceCard({ source, subjects }: SourceCardProps) {
       </CardHeader>
       <CardContent className="space-y-5">
         <div className="rounded-3xl border border-border/80 bg-secondary/40 p-5">
-          <div className="mb-4 flex flex-wrap items-center gap-2">
+          <div className="mb-4 flex flex-wrap gap-2">
             {citationStyles.map((citationStyle) => (
               <Button
                 key={citationStyle.key}
@@ -98,7 +106,7 @@ export function SourceCard({ source, subjects }: SourceCardProps) {
             ))}
           </div>
           <p className="text-sm leading-7">{citation}</p>
-          <div className="mt-4 flex items-center gap-3">
+          <div className="mt-4 flex flex-wrap items-center gap-3">
             <CopyButton text={citation} />
             <Badge variant="outline" className="rounded-full">
               Default: {getStyleLabel(source.citation_style)}

@@ -48,7 +48,7 @@ export function SubjectFormDialog({ subject }: SubjectFormDialogProps) {
         {isEditing ? "Edit" : "Add subject"}
       </Button>
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg p-4 sm:p-5">
           <DialogHeader>
             <DialogTitle>{isEditing ? "Edit subject" : "Create a subject"}</DialogTitle>
             <DialogDescription>
@@ -102,7 +102,7 @@ export function SubjectFormDialog({ subject }: SubjectFormDialogProps) {
               <Input
                 id={`subject-color-${subject?.id ?? "new"}`}
                 type="color"
-                className="h-12 w-20 p-2"
+                className="h-12 w-24 p-2"
                 {...form.register("color")}
               />
               <p className="text-xs text-destructive">

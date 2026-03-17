@@ -4,6 +4,37 @@ const optionalUrl = z.union([
   z.literal(""),
   z.string().url("Enter a valid URL."),
 ]);
+const DOI_PATTERN = /^10\.\d{4,9}\/[-._;()/:A-Z0-9]+$/i;
+
+export function normalizeSourceDoi(value?: string | null) {
+  if (!value) {
+    return null;
+  }
+
+  const trimmed = value.trim();
+
+  try {
+    const parsed = new URL(trimmed);
+
+    if (parsed.hostname.includes("doi.org")) {
+      return normalizeSourceDoi(decodeURIComponent(parsed.pathname.replace(/^\/+/, "")));
+    }
+  } catch {
+    // Treat the value as a DOI string below.
+  }
+
+  const normalized = trimmed.replace(/^doi:\s*/i, "");
+
+  return DOI_PATTERN.test(normalized) ? normalized : null;
+}
+
+const optionalDoi = z
+  .string()
+  .trim()
+  .max(180)
+  .refine((value) => !value || Boolean(normalizeSourceDoi(value)), "Enter a valid DOI.")
+  .optional()
+  .or(z.literal(""));
 
 export const citationStyleSchema = z.enum(["apa", "mla", "chicago"]);
 export const sourceTypeSchema = z.enum([
@@ -33,7 +64,7 @@ export const sourceSchema = z.object({
     .or(z.literal("")),
   journalOrPublisher: z.string().trim().max(180).optional().or(z.literal("")),
   url: optionalUrl.optional(),
-  doi: z.string().trim().max(180).optional().or(z.literal("")),
+  doi: optionalDoi,
   tagsText: z.string().trim().max(400).optional().or(z.literal("")),
   abstract: z.string().trim().max(5000).optional().or(z.literal("")),
   sourceType: sourceTypeSchema,
@@ -42,6 +73,25 @@ export const sourceSchema = z.object({
 });
 
 export type SourceInput = z.input<typeof sourceSchema>;
+
+export const sourceMetadataLookupSchema = z
+  .object({
+    doi: optionalDoi,
+    url: optionalUrl.optional(),
+  })
+  .superRefine((value, ctx) => {
+    if (value.doi || value.url) {
+      return;
+    }
+
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Enter a DOI or URL to fetch metadata.",
+      path: ["doi"],
+    });
+  });
+
+export type SourceMetadataLookupInput = z.input<typeof sourceMetadataLookupSchema>;
 
 export const sourceTypeOptions = [
   { value: "journal_article", label: "Journal article" },

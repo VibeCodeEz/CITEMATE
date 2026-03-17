@@ -40,7 +40,7 @@ export function CitationPreview({
               <CardTitle className="font-serif text-xl tracking-tight">
                 {preview.label}
               </CardTitle>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 {preview.style === activeStyle ? (
                   <Badge variant="secondary" className="rounded-full">
                     Preferred

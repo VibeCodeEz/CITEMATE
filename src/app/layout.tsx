@@ -18,6 +18,11 @@ const serif = Newsreader({
 export const metadata: Metadata = {
   title: "CiteMate",
   description: "A citation and research helper for college students.",
+  icons: {
+    icon: "/img/Tab Logo - CiteMate.png",
+    shortcut: "/img/Tab Logo - CiteMate.png",
+    apple: "/img/Tab Logo - CiteMate.png",
+  },
 };
 
 export default function RootLayout({

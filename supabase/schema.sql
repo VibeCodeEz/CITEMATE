@@ -69,9 +69,15 @@ create table if not exists public.sources (
   citation_style public.citation_style not null default 'apa',
   file_name text,
   file_path text,
+  file_type text,
+  file_size_bytes bigint,
+  file_uploaded_at timestamptz,
   created_at timestamptz not null default timezone('utc', now()),
   updated_at timestamptz not null default timezone('utc', now()),
-  constraint sources_year_check check (year is null or year between 1000 and 3000)
+  constraint sources_year_check check (year is null or year between 1000 and 3000),
+  constraint sources_file_size_bytes_check check (
+    file_size_bytes is null or file_size_bytes >= 0
+  )
 );
 
 create index if not exists sources_user_created_idx
@@ -102,6 +108,18 @@ create table if not exists public.notes (
 
 create index if not exists notes_user_updated_idx
   on public.notes (user_id, updated_at desc);
+
+create table if not exists public.source_reminder_dismissals (
+  user_id uuid not null references auth.users (id) on delete cascade,
+  source_id uuid not null references public.sources (id) on delete cascade,
+  reminder_key text not null,
+  source_updated_at timestamptz not null,
+  dismissed_at timestamptz not null default timezone('utc', now()),
+  primary key (user_id, source_id, reminder_key)
+);
+
+create index if not exists source_reminder_dismissals_user_idx
+  on public.source_reminder_dismissals (user_id, dismissed_at desc);
 
 create table if not exists public.checklist_items (
   id uuid primary key default gen_random_uuid(),
@@ -209,6 +227,7 @@ alter table public.subjects enable row level security;
 alter table public.sources enable row level security;
 alter table public.source_subjects enable row level security;
 alter table public.notes enable row level security;
+alter table public.source_reminder_dismissals enable row level security;
 alter table public.checklist_items enable row level security;
 alter table public.checklist_progress enable row level security;
 
@@ -244,6 +263,12 @@ with check (auth.uid() = user_id);
 drop policy if exists "Notes are owned by user" on public.notes;
 create policy "Notes are owned by user"
 on public.notes for all
+using (auth.uid() = user_id)
+with check (auth.uid() = user_id);
+
+drop policy if exists "Source reminder dismissals are owned by user" on public.source_reminder_dismissals;
+create policy "Source reminder dismissals are owned by user"
+on public.source_reminder_dismissals for all
 using (auth.uid() = user_id)
 with check (auth.uid() = user_id);
 

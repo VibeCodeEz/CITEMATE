@@ -21,7 +21,7 @@ export async function GET(_request: NextRequest, context: RouteContext) {
 
   const { data: source, error } = await supabase
     .from("sources")
-    .select("file_name, file_path")
+    .select("file_name, file_path, file_type, file_size_bytes, file_uploaded_at")
     .eq("id", sourceId)
     .eq("user_id", user.id)
     .maybeSingle();
@@ -39,6 +39,16 @@ export async function GET(_request: NextRequest, context: RouteContext) {
       { error: signedUrlError?.message ?? "Unable to create signed URL." },
       { status: 500 },
     );
+  }
+
+  if (_request.nextUrl.searchParams.get("mode") === "json") {
+    return NextResponse.json({
+      signedUrl: signedUrl.signedUrl,
+      fileName: source.file_name,
+      fileType: source.file_type,
+      fileSizeBytes: source.file_size_bytes,
+      fileUploadedAt: source.file_uploaded_at,
+    });
   }
 
   return NextResponse.redirect(signedUrl.signedUrl);
