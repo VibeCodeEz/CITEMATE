@@ -23,6 +23,10 @@ const sections = [
     body: "We use personal information to create and maintain accounts, provide the research workspace, generate citations, store notes and attachments, support password recovery and account deletion, protect the service from misuse, troubleshoot errors, and improve reliability. If you use AI-assisted features, only the information needed to respond to that request should be sent to the configured model provider.",
   },
   {
+    title: "Cookies and Similar Technologies",
+    body: "CiteMate uses cookies and similar session technologies that are needed to keep users signed in, protect authenticated routes, and support secure account access through Supabase and Next.js server-side session handling. These cookies are generally used for essential service operation rather than advertising. CiteMate may also use browser storage features such as local storage for device-specific drafting helpers like unsaved note drafts or saved note templates. Users can control cookies through browser settings, but blocking essential cookies may prevent sign-in or other core features from working correctly.",
+  },
+  {
     title: "Service Providers and Sharing",
     body: "CiteMate does not sell personal information. Information may be processed by service providers that support hosting, authentication, database and file storage, analytics or error monitoring, email delivery, and AI functionality, but only as needed to operate the service, comply with law, enforce the Terms, or protect users and the product.",
   },

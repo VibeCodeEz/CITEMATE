@@ -4,6 +4,7 @@ const legalLinks = [
   { href: "/about", label: "About" },
   { href: "/faq", label: "FAQ" },
   { href: "/tutorial", label: "Tutorial" },
+  { href: "/support", label: "Support CiteMate" },
   { href: "/privacy-policy", label: "Privacy Policy" },
   { href: "/terms", label: "Terms of Service" },
   { href: "/contact", label: "Contact" },

@@ -249,6 +249,46 @@ export async function deleteAccountAction(
     return errorResult("Your session has expired. Sign in again and retry.");
   }
 
+  const sourceFilesResult = await supabase
+    .from("sources")
+    .select("file_path")
+    .eq("user_id", user.id)
+    .not("file_path", "is", null);
+
+  if (sourceFilesResult.error) {
+    captureMonitoredError(sourceFilesResult.error, {
+      area: "auth",
+      action: "delete_account_load_files_failed",
+      userId: user.id,
+      statusCode: 500,
+    });
+    return errorResult(
+      "We could not prepare account deletion right now. Please try again.",
+    );
+  }
+
+  const filePaths = (sourceFilesResult.data ?? [])
+    .map((item) => item.file_path)
+    .filter((value): value is string => Boolean(value));
+
+  if (filePaths.length > 0) {
+    const { error: storageDeleteError } = await supabase.storage
+      .from("source-files")
+      .remove(filePaths);
+
+    if (storageDeleteError) {
+      captureMonitoredError(storageDeleteError, {
+        area: "auth",
+        action: "delete_account_storage_cleanup_failed",
+        userId: user.id,
+        statusCode: 500,
+      });
+      return errorResult(
+        `We could not delete uploaded source files right now. ${storageDeleteError.message}`,
+      );
+    }
+  }
+
   const { error } = await supabase.rpc("delete_current_user");
 
   if (error) {
@@ -258,8 +298,15 @@ export async function deleteAccountAction(
       userId: user.id,
       statusCode: 500,
     });
+
+    const errorDetails = [error.message, error.details, error.hint]
+      .filter(Boolean)
+      .join(" ");
+
     return errorResult(
-      "We could not delete the account right now. Apply the latest Supabase migration and try again.",
+      errorDetails
+        ? `We could not delete the account right now. ${errorDetails}`
+        : "We could not delete the account right now. Apply the latest Supabase migration and try again.",
     );
   }
 

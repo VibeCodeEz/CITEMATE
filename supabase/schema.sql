@@ -271,20 +271,16 @@ set search_path = public, auth, storage
 as $$
 declare
   current_user_id uuid;
-begin
-  current_user_id := auth.uid();
-
-  if current_user_id is null then
-    raise exception 'Not authenticated.';
-  end if;
-
-  delete from storage.objects
-  where bucket_id = 'source-files'
-    and (storage.foldername(name))[1] = current_user_id::text;
-
-  delete from auth.users
-  where id = current_user_id;
-end;
+  begin
+    current_user_id := auth.uid();
+  
+    if current_user_id is null then
+      raise exception 'Not authenticated.';
+    end if;
+  
+    delete from auth.users
+    where id = current_user_id;
+  end;
 $$;
 
 drop trigger if exists source_subjects_ownership_guard on public.source_subjects;
