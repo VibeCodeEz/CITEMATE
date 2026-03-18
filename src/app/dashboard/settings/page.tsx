@@ -3,6 +3,7 @@ import Link from "next/link";
 import { AccountDangerZone } from "@/components/app/account-danger-zone";
 import { PageHeader } from "@/components/app/page-header";
 import { PasswordResetRequestForm } from "@/components/app/password-reset-request-form";
+import { WorkspaceExportButton } from "@/components/app/workspace-export-button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getDashboardShellData } from "@/lib/data/citemate";
@@ -72,6 +73,18 @@ export default async function SettingsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-5">
+            <div className="rounded-[1.5rem] border border-border/70 bg-secondary/25 p-4">
+              <p className="text-sm font-medium">Backup before deletion</p>
+              <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                Download a JSON backup of your workspace before deleting the
+                account. The backup includes sources, notes, subjects,
+                checklist progress, and attachment metadata with internal
+                download routes for attached files.
+              </p>
+              <div className="mt-4">
+                <WorkspaceExportButton />
+              </div>
+            </div>
             <div className="rounded-[1.5rem] border border-destructive/20 bg-destructive/5 p-4">
               <p className="text-sm leading-6 text-muted-foreground">
                 Make sure anything you want to keep has been exported first.

@@ -1,10 +1,10 @@
 "use client";
 
-import { useId, useState, useTransition } from "react";
+import { useEffect, useId, useState, useTransition } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
-import { LoaderCircle, Paperclip, Plus, Search, SquarePen } from "lucide-react";
+import { AlertTriangle, LoaderCircle, Paperclip, Plus, Search, SquarePen } from "lucide-react";
 import { toast } from "sonner";
 
 import {
@@ -33,6 +33,7 @@ import {
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import type { CitationSource } from "@/lib/citations/types";
 import {
+  citationStyleOptions,
   parseAuthors,
   sourceSchema,
   sourceTypeOptions,
@@ -44,11 +45,13 @@ import { useWatch } from "react-hook-form";
 type SourceFormDialogProps = {
   source?: SourceWithRelations;
   subjects: SubjectWithCount[];
+  existingSources?: SourceWithRelations[];
 };
 
 export function SourceFormDialog({
   source,
   subjects,
+  existingSources = [],
 }: SourceFormDialogProps) {
   const metadataFieldLabels: Record<SourceMetadataField, string> = {
     title: "title",
@@ -66,11 +69,14 @@ export function SourceFormDialog({
   const [savePending, startSaveTransition] = useTransition();
   const [metadataPending, startMetadataTransition] = useTransition();
   const [file, setFile] = useState<File | null>(null);
+  const [draftAvailable, setDraftAvailable] = useState(false);
+  const [draftSavedAt, setDraftSavedAt] = useState<string | null>(null);
   const [metadataStatus, setMetadataStatus] = useState<{
     tone: "success" | "error" | "info";
     message: string;
   } | null>(null);
   const isEditing = Boolean(source);
+  const draftStorageKey = `citemate:source-draft:${source?.id ?? "new"}`;
   const form = useForm<SourceInput>({
     resolver: zodResolver(sourceSchema),
     defaultValues: {
@@ -89,6 +95,7 @@ export function SourceFormDialog({
     },
   });
   const previewValues = useWatch({ control: form.control });
+  const draftValues = useWatch({ control: form.control });
   const previewSource: CitationSource = {
     title: previewValues.title?.trim() || "",
     authors: parseAuthors(previewValues.authorsText ?? ""),
@@ -101,6 +108,180 @@ export function SourceFormDialog({
     citationStylePreference:
       previewValues.citationStylePreference ?? "apa",
   };
+
+  const duplicateMatches = (() => {
+    const currentId = source?.id;
+    const normalizedDoi = (previewValues.doi ?? "").trim().toLowerCase();
+    const normalizedUrl = (previewValues.url ?? "").trim().toLowerCase();
+    const normalizedTitle = (previewValues.title ?? "")
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, " ");
+    const normalizedAuthors = parseAuthors(previewValues.authorsText ?? "").map((author) =>
+      author.toLowerCase(),
+    );
+    const normalizedYear = (previewValues.year ?? "").trim();
+
+    return existingSources
+      .filter((candidate) => candidate.id !== currentId)
+      .map((candidate) => {
+        const reasons: string[] = [];
+        const candidateTitle = candidate.title.trim().toLowerCase().replace(/\s+/g, " ");
+        const candidateUrl = (candidate.url ?? "").trim().toLowerCase();
+        const candidateDoi = (candidate.doi ?? "").trim().toLowerCase();
+        const candidateAuthors = candidate.authors.map((author) => author.toLowerCase());
+
+        if (normalizedDoi && candidateDoi && normalizedDoi === candidateDoi) {
+          reasons.push("matching DOI");
+        }
+
+        if (normalizedUrl && candidateUrl && normalizedUrl === candidateUrl) {
+          reasons.push("matching URL");
+        }
+
+        const authorOverlap = normalizedAuthors.some((author) =>
+          candidateAuthors.includes(author),
+        );
+        const yearMatches =
+          normalizedYear && candidate.year ? normalizedYear === String(candidate.year) : false;
+
+        if (
+          normalizedTitle &&
+          candidateTitle &&
+          normalizedTitle === candidateTitle &&
+          (yearMatches || authorOverlap)
+        ) {
+          reasons.push(yearMatches ? "same title and year" : "same title and author");
+        }
+
+        return reasons.length > 0
+          ? {
+              sourceId: candidate.id,
+              title: candidate.title,
+              reasons,
+            }
+          : null;
+      })
+      .filter(
+        (
+          value,
+        ): value is {
+          sourceId: string;
+          title: string;
+          reasons: string[];
+        } => Boolean(value),
+      )
+      .slice(0, 3);
+  })();
+
+  useEffect(() => {
+    if (!open || !form.formState.isDirty) {
+      return;
+    }
+
+    const timeout = window.setTimeout(() => {
+      const savedAt = new Date().toISOString();
+
+      window.localStorage.setItem(
+        draftStorageKey,
+        JSON.stringify({
+          values: draftValues,
+          savedAt,
+        }),
+      );
+      setDraftSavedAt(savedAt);
+    }, 800);
+
+    return () => window.clearTimeout(timeout);
+  }, [draftStorageKey, draftValues, form.formState.isDirty, open]);
+
+  useEffect(() => {
+    if (!open || !form.formState.isDirty) {
+      return;
+    }
+
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [form.formState.isDirty, open]);
+
+  function clearDraft() {
+    window.localStorage.removeItem(draftStorageKey);
+    setDraftAvailable(false);
+    setDraftSavedAt(null);
+  }
+
+  function loadDraftState() {
+    const draft = window.localStorage.getItem(draftStorageKey);
+
+    if (!draft) {
+      setDraftAvailable(false);
+      setDraftSavedAt(null);
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(draft) as {
+        values?: SourceInput;
+        savedAt?: string;
+      };
+
+      setDraftAvailable(Boolean(parsed.values));
+      setDraftSavedAt(parsed.savedAt ?? null);
+    } catch {
+      setDraftAvailable(false);
+      setDraftSavedAt(null);
+    }
+  }
+
+  function restoreDraft() {
+    const draft = window.localStorage.getItem(draftStorageKey);
+
+    if (!draft) {
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(draft) as {
+        values?: SourceInput;
+        savedAt?: string;
+      };
+
+      if (!parsed.values) {
+        return;
+      }
+
+      form.reset(parsed.values);
+      setDraftAvailable(false);
+      setDraftSavedAt(parsed.savedAt ?? null);
+      toast.success("Local source draft restored.");
+    } catch {
+      toast.error("We couldn't restore that local draft.");
+    }
+  }
+
+  function handleOpenChange(nextOpen: boolean) {
+    if (!nextOpen && open && form.formState.isDirty) {
+      const confirmed = window.confirm(
+        "Close this source form? Your unsaved changes are still autosaved on this device until you save or dismiss the draft.",
+      );
+
+      if (!confirmed) {
+        return;
+      }
+    }
+
+    if (nextOpen) {
+      loadDraftState();
+    }
+
+    setOpen(nextOpen);
+  }
 
   const handleFetchMetadata = () => {
     setMetadataStatus({
@@ -189,11 +370,17 @@ export function SourceFormDialog({
 
   return (
     <>
-      <Button variant={isEditing ? "outline" : "default"} onClick={() => setOpen(true)}>
+      <Button
+        variant={isEditing ? "outline" : "default"}
+        onClick={() => {
+          loadDraftState();
+          setOpen(true);
+        }}
+      >
         {isEditing ? <SquarePen className="size-4" /> : <Plus className="size-4" />}
         {isEditing ? "Edit" : "Add source"}
       </Button>
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent className="max-h-[92vh] p-4 sm:max-w-5xl sm:p-6 xl:max-w-6xl">
           <DialogHeader>
             <DialogTitle>{isEditing ? "Edit source" : "Add a source"}</DialogTitle>
@@ -254,6 +441,7 @@ export function SourceFormDialog({
                 }
 
                 toast.success(result.message);
+                clearDraft();
                 setFile(null);
                 setOpen(false);
                 router.refresh();
@@ -261,6 +449,53 @@ export function SourceFormDialog({
             })}
           >
             <div className="space-y-5">
+              {draftAvailable ? (
+                <div className="rounded-[1.5rem] border border-border/80 bg-secondary/25 p-4">
+                  <p className="text-sm font-medium">Local draft available</p>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                    {draftSavedAt
+                      ? `Autosaved on this device at ${new Intl.DateTimeFormat("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          hour: "numeric",
+                          minute: "2-digit",
+                        }).format(new Date(draftSavedAt))}. Attachments are not part of local draft autosave.`
+                      : "A local source draft is saved on this device. Attachments are not included."}
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <Button type="button" size="sm" variant="outline" onClick={restoreDraft}>
+                      Restore draft
+                    </Button>
+                    <Button type="button" size="sm" variant="ghost" onClick={clearDraft}>
+                      Dismiss draft
+                    </Button>
+                  </div>
+                </div>
+              ) : null}
+              {duplicateMatches.length > 0 ? (
+                <div className="rounded-[1.5rem] border border-amber-300/60 bg-amber-50/70 p-4 text-amber-950">
+                  <div className="flex items-start gap-3">
+                    <AlertTriangle className="mt-0.5 size-5 text-amber-700" />
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium">
+                        Possible duplicate source{duplicateMatches.length === 1 ? "" : "s"}
+                      </p>
+                      <div className="space-y-2 text-sm">
+                        {duplicateMatches.map((match) => (
+                          <p key={match.sourceId}>
+                            <span className="font-medium">{match.title}</span>
+                            {" - "}
+                            {match.reasons.join(", ")}
+                          </p>
+                        ))}
+                      </div>
+                      <p className="text-xs leading-5 text-amber-900/80">
+                        This is only a warning. You can still save if this is intentionally a separate source entry.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
               <div className="space-y-2">
                 <Label htmlFor={`${fieldId}-title`}>Title</Label>
                 <Input id={`${fieldId}-title`} {...form.register("title")} />
@@ -317,9 +552,11 @@ export function SourceFormDialog({
                     className="flex h-10 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
                     {...form.register("citationStylePreference")}
                   >
-                    <option value="apa">APA 7</option>
-                    <option value="mla">MLA 9</option>
-                    <option value="chicago">Chicago</option>
+                    {citationStyleOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
                   </select>
                 </div>
                 <div className="space-y-2">
@@ -474,6 +711,11 @@ export function SourceFormDialog({
                     ? "Save changes"
                     : "Save source"}
               </Button>
+              <p className="text-center text-xs text-muted-foreground">
+                {draftSavedAt
+                  ? "Local draft autosave is on for this device while you edit."
+                  : "Unsaved source edits stay local until you save."}
+              </p>
             </div>
             <div className="space-y-4 2xl:sticky 2xl:top-0">
               <div className="rounded-3xl border border-border/70 bg-secondary/30 p-4">

@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { getSourcesData } from "@/lib/data/citemate";
-import { sourceTypeOptions } from "@/lib/validations/source";
+import { citationStyleOptions, sourceTypeOptions } from "@/lib/validations/source";
 
 type SourcesPageProps = {
   searchParams: Promise<{
@@ -38,7 +38,7 @@ export default async function SourcesPage({ searchParams }: SourcesPageProps) {
         actions={
           <>
             <SourceImportDialog existingSources={allSources} />
-            <SourceFormDialog subjects={subjects} />
+            <SourceFormDialog subjects={subjects} existingSources={allSources} />
           </>
         }
       />
@@ -76,7 +76,7 @@ export default async function SourcesPage({ searchParams }: SourcesPageProps) {
               <Input
                 name="q"
                 defaultValue={filters.q}
-                placeholder="Search title, author, DOI, URL, abstract, or tag"
+                placeholder="Search title, authors, linked notes, DOI, URL, abstract, subjects, or tags"
                 className="pl-9"
               />
             </div>
@@ -122,9 +122,11 @@ export default async function SourcesPage({ searchParams }: SourcesPageProps) {
               className="flex h-10 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
             >
               <option value="">All citation styles</option>
-              <option value="apa">APA 7</option>
-              <option value="mla">MLA 9</option>
-              <option value="chicago">Chicago</option>
+              {citationStyleOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
             </select>
             <Input
               name="tag"
@@ -160,7 +162,7 @@ export default async function SourcesPage({ searchParams }: SourcesPageProps) {
           action={
             <div className="flex flex-wrap gap-3">
               <SourceImportDialog existingSources={allSources} />
-              <SourceFormDialog subjects={subjects} />
+              <SourceFormDialog subjects={subjects} existingSources={allSources} />
             </div>
           }
         />

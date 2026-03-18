@@ -1,12 +1,13 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { LoaderCircle, MessageSquareDashed } from "lucide-react";
+import { ChevronDown, LoaderCircle, MessageSquareDashed, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
 import { AssistantContextSummary } from "@/components/ai/assistant-context-summary";
 import { AssistantResponseCard } from "@/components/ai/assistant-response-card";
 import { TaskActionButtons } from "@/components/ai/task-action-buttons";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -46,11 +47,97 @@ export function ResearchAssistantPanel({
   const [draftText, setDraftText] = useState("");
   const [userMessage, setUserMessage] = useState("");
   const [pending, setPending] = useState(false);
+  const [showContextPreview, setShowContextPreview] = useState(false);
+  const [includeSourceContext, setIncludeSourceContext] = useState(Boolean(sourceContext));
+  const [includeNoteContext, setIncludeNoteContext] = useState(Boolean(noteContext));
+  const [includeSubjectContext, setIncludeSubjectContext] = useState(Boolean(subjectContext));
+  const [includeReminderContext, setIncludeReminderContext] = useState(Boolean(reminderContext));
+  const [includeUserMessage, setIncludeUserMessage] = useState(true);
 
   const hasContext = useMemo(
-    () => Boolean(sourceContext || noteContext || reminderContext),
-    [noteContext, reminderContext, sourceContext],
+    () =>
+      Boolean(
+        (includeSourceContext && sourceContext) ||
+          (includeNoteContext && noteContext) ||
+          (includeReminderContext && reminderContext),
+      ),
+    [
+      includeNoteContext,
+      includeReminderContext,
+      includeSourceContext,
+      noteContext,
+      reminderContext,
+      sourceContext,
+    ],
   );
+
+  const contextPreviewItems = useMemo(() => {
+    const items: Array<{ label: string; value: string }> = [];
+
+    if (includeSourceContext && sourceContext) {
+      items.push({
+        label: "Source",
+        value: [
+          sourceContext.title,
+          sourceContext.authors.join(", "),
+          sourceContext.abstract ?? "",
+          sourceContext.tags.join(", "),
+          sourceContext.subjectLabels.join(", "),
+        ]
+          .filter(Boolean)
+          .join(" | "),
+      });
+    }
+
+    if (includeNoteContext && noteContext) {
+      items.push({
+        label: "Note",
+        value: [noteContext.title, noteContext.content].filter(Boolean).join(" | "),
+      });
+    }
+
+    if (includeSubjectContext && subjectContext) {
+      items.push({
+        label: "Subject",
+        value: [subjectContext.name, subjectContext.description ?? ""]
+          .filter(Boolean)
+          .join(" | "),
+      });
+    }
+
+    if (includeReminderContext && reminderContext) {
+      items.push({
+        label: "Reminder",
+        value: [
+          reminderContext.title,
+          reminderContext.description,
+          reminderContext.missingFields.join(", "),
+        ]
+          .filter(Boolean)
+          .join(" | "),
+      });
+    }
+
+    if (includeUserMessage && userMessage.trim()) {
+      items.push({
+        label: "Follow-up",
+        value: userMessage.trim(),
+      });
+    }
+
+    return items;
+  }, [
+    includeNoteContext,
+    includeReminderContext,
+    includeSourceContext,
+    includeSubjectContext,
+    includeUserMessage,
+    noteContext,
+    reminderContext,
+    sourceContext,
+    subjectContext,
+    userMessage,
+  ]);
 
   async function runTask(taskType: AssistantTaskType) {
     if (!hasContext) {
@@ -69,11 +156,14 @@ export function ResearchAssistantPanel({
         },
         body: JSON.stringify({
           taskType,
-          sourceContext,
-          noteContext,
-          subjectContext,
-          reminderContext,
-          userMessage: userMessage.trim() || undefined,
+          sourceContext: includeSourceContext ? sourceContext : undefined,
+          noteContext: includeNoteContext ? noteContext : undefined,
+          subjectContext: includeSubjectContext ? subjectContext : undefined,
+          reminderContext: includeReminderContext ? reminderContext : undefined,
+          userMessage:
+            includeUserMessage && userMessage.trim()
+              ? userMessage.trim()
+              : undefined,
         }),
       });
 
@@ -112,10 +202,130 @@ export function ResearchAssistantPanel({
         </CardHeader>
         <CardContent className="space-y-4">
           <AssistantContextSummary
-            sourceContext={sourceContext}
-            noteContext={noteContext}
-            reminderContext={reminderContext}
+            sourceContext={includeSourceContext ? sourceContext : undefined}
+            noteContext={includeNoteContext ? noteContext : undefined}
+            reminderContext={includeReminderContext ? reminderContext : undefined}
           />
+          <div className="rounded-[1.5rem] border border-border/80 bg-secondary/15 p-4">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="size-4 text-primary" />
+                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                    AI safety controls
+                  </p>
+                </div>
+                <p className="text-sm leading-6 text-muted-foreground">
+                  Choose exactly what context to include with this request. Turn sections off when you want a narrower prompt.
+                </p>
+              </div>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => setShowContextPreview((current) => !current)}
+              >
+                <ChevronDown className="size-4" />
+                {showContextPreview ? "Hide context preview" : "Show context preview"}
+              </Button>
+            </div>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              {sourceContext ? (
+                <label className="flex items-start gap-3 rounded-2xl border border-border/70 bg-background/70 p-3">
+                  <Checkbox
+                    checked={includeSourceContext}
+                    onCheckedChange={(value) => setIncludeSourceContext(Boolean(value))}
+                    aria-label="Include source context in AI request"
+                  />
+                  <span className="space-y-1">
+                    <span className="block font-medium">Include source metadata</span>
+                    <span className="block text-xs leading-5 text-muted-foreground">
+                      Title, authors, abstract, tags, citation details, and linked subjects.
+                    </span>
+                  </span>
+                </label>
+              ) : null}
+              {noteContext ? (
+                <label className="flex items-start gap-3 rounded-2xl border border-border/70 bg-background/70 p-3">
+                  <Checkbox
+                    checked={includeNoteContext}
+                    onCheckedChange={(value) => setIncludeNoteContext(Boolean(value))}
+                    aria-label="Include note context in AI request"
+                  />
+                  <span className="space-y-1">
+                    <span className="block font-medium">Include note content</span>
+                    <span className="block text-xs leading-5 text-muted-foreground">
+                      Note title and current note text.
+                    </span>
+                  </span>
+                </label>
+              ) : null}
+              {subjectContext ? (
+                <label className="flex items-start gap-3 rounded-2xl border border-border/70 bg-background/70 p-3">
+                  <Checkbox
+                    checked={includeSubjectContext}
+                    onCheckedChange={(value) => setIncludeSubjectContext(Boolean(value))}
+                    aria-label="Include subject context in AI request"
+                  />
+                  <span className="space-y-1">
+                    <span className="block font-medium">Include subject context</span>
+                    <span className="block text-xs leading-5 text-muted-foreground">
+                      Subject name and optional description.
+                    </span>
+                  </span>
+                </label>
+              ) : null}
+              {reminderContext ? (
+                <label className="flex items-start gap-3 rounded-2xl border border-border/70 bg-background/70 p-3">
+                  <Checkbox
+                    checked={includeReminderContext}
+                    onCheckedChange={(value) => setIncludeReminderContext(Boolean(value))}
+                    aria-label="Include reminder context in AI request"
+                  />
+                  <span className="space-y-1">
+                    <span className="block font-medium">Include reminder context</span>
+                    <span className="block text-xs leading-5 text-muted-foreground">
+                      Reminder title, missing fields, and cleanup description.
+                    </span>
+                  </span>
+                </label>
+              ) : null}
+              <label className="flex items-start gap-3 rounded-2xl border border-border/70 bg-background/70 p-3">
+                <Checkbox
+                  checked={includeUserMessage}
+                  onCheckedChange={(value) => setIncludeUserMessage(Boolean(value))}
+                  aria-label="Include follow-up message in AI request"
+                />
+                <span className="space-y-1">
+                  <span className="block font-medium">Include follow-up message</span>
+                  <span className="block text-xs leading-5 text-muted-foreground">
+                    Sends the optional instruction you type below with this request.
+                  </span>
+                </span>
+              </label>
+            </div>
+            {showContextPreview ? (
+              <div className="mt-4 space-y-2 rounded-2xl border border-border/70 bg-background/80 p-3">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                  Context that will be sent
+                </p>
+                {contextPreviewItems.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">
+                    No context is currently selected for this request.
+                  </p>
+                ) : (
+                  contextPreviewItems.map((item) => (
+                    <div key={item.label} className="space-y-1">
+                      <p className="text-sm font-medium">{item.label}</p>
+                      <p className="text-xs leading-5 text-muted-foreground">
+                        {item.value}
+                      </p>
+                    </div>
+                  ))
+                )}
+              </div>
+            ) : null}
+          </div>
           <div className="space-y-3">
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
               Quick actions

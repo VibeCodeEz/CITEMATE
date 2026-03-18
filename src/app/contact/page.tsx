@@ -49,9 +49,9 @@ export default function ContactPage() {
                 </p>
               ) : (
                 <p className="mt-2 leading-7 text-muted-foreground">
-                  No public support email has been configured yet. Set
-                  `NEXT_PUBLIC_SUPPORT_EMAIL` before launch so users have a real
-                  contact path.
+                  A dedicated support inbox will be available soon. In the
+                  meantime, this contact channel is being prepared so help,
+                  privacy requests, and account questions have a clearer home.
                 </p>
               )}
             </div>

@@ -28,12 +28,14 @@ import type {
 type SourceCardProps = {
   source: SourceWithRelations;
   subjects: SubjectWithCount[];
+  allSources?: SourceWithRelations[];
   selectionControl?: ReactNode;
 };
 
 export function SourceCard({
   source,
   subjects,
+  allSources = [],
   selectionControl,
 }: SourceCardProps) {
   const [style, setStyle] = useState<CitationStyle>(source.citation_style);
@@ -81,7 +83,11 @@ export function SourceCard({
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
-            <SourceFormDialog source={source} subjects={subjects} />
+            <SourceFormDialog
+              source={source}
+              subjects={subjects}
+              existingSources={allSources}
+            />
             <DeleteButton
               itemLabel={source.title}
               onDelete={deleteSourceAction}

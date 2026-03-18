@@ -68,6 +68,7 @@ export function SourcesCollection({
             key={source.id}
             source={source}
             subjects={subjects}
+            allSources={sources}
             selectionControl={
               <Checkbox
                 checked={selectedIds.includes(source.id)}

@@ -1,15 +1,17 @@
 import { deleteNoteAction } from "@/actions/notes";
+import { NoteVersionHistoryPanel } from "@/components/app/note-version-history-panel";
 import { NoteMarkdown } from "@/components/app/note-markdown";
 import { DeleteButton } from "@/components/app/delete-button";
 import { NoteFormDialog } from "@/components/app/note-form-dialog";
 import { Card, CardContent } from "@/components/ui/card";
-import type { Note, SourceWithRelations } from "@/types/app";
+import type { Note, NoteVersion, SourceWithRelations } from "@/types/app";
 
 type NoteCardProps = {
   note: Note;
   sources: SourceWithRelations[];
   compact?: boolean;
   lockedSource?: SourceWithRelations;
+  versions?: NoteVersion[];
 };
 
 function formatTimestamp(value: string) {
@@ -27,6 +29,7 @@ export function NoteCard({
   sources,
   compact = false,
   lockedSource,
+  versions = [],
 }: NoteCardProps) {
   const linkedSource =
     lockedSource ?? sources.find((source) => source.id === note.source_id) ?? null;
@@ -75,6 +78,7 @@ export function NoteCard({
         <div className="min-w-0 overflow-hidden rounded-[1.5rem] border border-border/80 bg-secondary/25 p-4">
           <NoteMarkdown content={note.content} className="break-words" />
         </div>
+        <NoteVersionHistoryPanel noteId={note.id} versions={versions} />
       </CardContent>
     </Card>
   );

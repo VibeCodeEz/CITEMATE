@@ -22,6 +22,7 @@ import { fetchSourceMetadata } from "@/lib/source-metadata/fetch";
 import { prepareSourceImportRows, summarizeSourceImportResults } from "@/lib/source-import/prepare";
 import type { CsvImportServerResultRow } from "@/lib/source-import/types";
 import type { SourceMetadata } from "@/lib/source-metadata/types";
+import type { SourceVersionSnapshot } from "@/types/app";
 
 type SourceActionData = {
   sourceId?: string;
@@ -47,6 +48,50 @@ function revalidateSourceViews(sourceId?: string) {
   if (sourceId) {
     revalidatePath(`/dashboard/sources/${sourceId}`);
   }
+}
+
+function buildSourceVersionSnapshot(args: {
+  title: string;
+  authors: string[];
+  year: number | null;
+  publisher: string | null;
+  url: string | null;
+  doi: string | null;
+  tags: string[];
+  abstract: string | null;
+  source_type: SourceInput["sourceType"];
+  citation_style: SourceInput["citationStylePreference"];
+  subjectIds: string[];
+}): SourceVersionSnapshot {
+  return {
+    title: args.title,
+    authors: args.authors,
+    year: args.year,
+    publisher: args.publisher,
+    url: args.url,
+    doi: args.doi,
+    tags: args.tags,
+    abstract: args.abstract,
+    source_type: args.source_type,
+    citation_style: args.citation_style,
+    subject_ids: args.subjectIds,
+  };
+}
+
+async function saveSourceVersion(args: {
+  userId: string;
+  sourceId: string;
+  snapshot: SourceVersionSnapshot;
+  reason: string;
+}) {
+  const supabase = await createSupabaseServerClient();
+
+  await supabase.from("source_versions").insert({
+    user_id: args.userId,
+    source_id: args.sourceId,
+    snapshot: args.snapshot,
+    reason: args.reason,
+  });
 }
 
 export async function upsertSourceAction(
@@ -88,6 +133,52 @@ export async function upsertSourceAction(
   let sourceId = parsed.data.id;
 
   if (sourceId) {
+    const [{ data: existingSource, error: existingSourceError }, { data: existingLinks, error: existingLinksError }] =
+      await Promise.all([
+        supabase
+          .from("sources")
+          .select("title,authors,year,publisher,url,doi,tags,abstract,source_type,citation_style")
+          .eq("id", sourceId)
+          .eq("user_id", user.id)
+          .maybeSingle(),
+        supabase
+          .from("source_subjects")
+          .select("subject_id")
+          .eq("source_id", sourceId)
+          .eq("user_id", user.id),
+      ]);
+
+    if (existingSourceError) {
+      return errorResult(existingSourceError.message);
+    }
+
+    if (existingLinksError) {
+      return errorResult(existingLinksError.message);
+    }
+
+    if (!existingSource) {
+      return errorResult("We couldn't find that source.");
+    }
+
+    await saveSourceVersion({
+      userId: user.id,
+      sourceId,
+      snapshot: buildSourceVersionSnapshot({
+        title: existingSource.title,
+        authors: existingSource.authors,
+        year: existingSource.year,
+        publisher: existingSource.publisher,
+        url: existingSource.url,
+        doi: existingSource.doi,
+        tags: existingSource.tags,
+        abstract: existingSource.abstract,
+        source_type: existingSource.source_type,
+        citation_style: existingSource.citation_style,
+        subjectIds: (existingLinks ?? []).map((link) => link.subject_id),
+      }),
+      reason: "before_update",
+    });
+
     const { error } = await supabase
       .from("sources")
       .update(payload)
@@ -119,6 +210,25 @@ export async function upsertSourceAction(
     }
 
     sourceId = data.id;
+
+    await saveSourceVersion({
+      userId: user.id,
+      sourceId,
+      snapshot: buildSourceVersionSnapshot({
+        title: payload.title,
+        authors: payload.authors,
+        year: payload.year,
+        publisher: payload.publisher,
+        url: payload.url,
+        doi: payload.doi,
+        tags: payload.tags,
+        abstract: payload.abstract,
+        source_type: payload.source_type,
+        citation_style: payload.citation_style,
+        subjectIds: parsed.data.subjectIds ?? [],
+      }),
+      reason: "created",
+    });
   }
 
   if ((parsed.data.subjectIds?.length ?? 0) > 0 && sourceId) {
@@ -352,4 +462,122 @@ export async function attachSourceFileAction(
   revalidateSourceViews(sourceId);
 
   return successResult("Attachment saved.");
+}
+
+export async function restoreSourceVersionAction(
+  sourceId: string,
+  versionId: string,
+): Promise<ActionResult> {
+  const user = await requireUser();
+  const supabase = await createSupabaseServerClient();
+  const [
+    { data: version, error: versionError },
+    { data: source, error: sourceError },
+    { data: existingLinks, error: linksError },
+  ] = await Promise.all([
+    supabase
+      .from("source_versions")
+      .select("snapshot")
+      .eq("id", versionId)
+      .eq("source_id", sourceId)
+      .eq("user_id", user.id)
+      .maybeSingle(),
+    supabase
+      .from("sources")
+      .select("title,authors,year,publisher,url,doi,tags,abstract,source_type,citation_style")
+      .eq("id", sourceId)
+      .eq("user_id", user.id)
+      .maybeSingle(),
+    supabase
+      .from("source_subjects")
+      .select("subject_id")
+      .eq("source_id", sourceId)
+      .eq("user_id", user.id),
+  ]);
+
+  if (versionError) {
+    return errorResult(versionError.message);
+  }
+
+  if (sourceError) {
+    return errorResult(sourceError.message);
+  }
+
+  if (linksError) {
+    return errorResult(linksError.message);
+  }
+
+  if (!version || !source) {
+    return errorResult("We couldn't find that saved source version.");
+  }
+
+  await saveSourceVersion({
+    userId: user.id,
+    sourceId,
+    snapshot: buildSourceVersionSnapshot({
+      title: source.title,
+      authors: source.authors,
+      year: source.year,
+      publisher: source.publisher,
+      url: source.url,
+      doi: source.doi,
+      tags: source.tags,
+      abstract: source.abstract,
+      source_type: source.source_type,
+      citation_style: source.citation_style,
+      subjectIds: (existingLinks ?? []).map((link) => link.subject_id),
+    }),
+    reason: "before_restore",
+  });
+
+  const snapshot = version.snapshot as unknown as SourceVersionSnapshot;
+
+  const { error: updateError } = await supabase
+    .from("sources")
+    .update({
+      title: snapshot.title,
+      authors: snapshot.authors,
+      year: snapshot.year,
+      publisher: snapshot.publisher,
+      url: snapshot.url,
+      doi: snapshot.doi,
+      tags: snapshot.tags,
+      abstract: snapshot.abstract,
+      source_type: snapshot.source_type,
+      citation_style: snapshot.citation_style,
+    })
+    .eq("id", sourceId)
+    .eq("user_id", user.id);
+
+  if (updateError) {
+    return errorResult(updateError.message);
+  }
+
+  const { error: deleteLinksError } = await supabase
+    .from("source_subjects")
+    .delete()
+    .eq("source_id", sourceId)
+    .eq("user_id", user.id);
+
+  if (deleteLinksError) {
+    return errorResult(deleteLinksError.message);
+  }
+
+  if (snapshot.subject_ids.length > 0) {
+    const { error: insertLinksError } = await supabase.from("source_subjects").insert(
+      snapshot.subject_ids.map((subjectId) => ({
+        source_id: sourceId,
+        subject_id: subjectId,
+        user_id: user.id,
+      })),
+    );
+
+    if (insertLinksError) {
+      return errorResult(insertLinksError.message);
+    }
+  }
+
+  revalidateSourceViews(sourceId);
+
+  return successResult("Source restored to that saved version.");
 }

@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 
 import { EmptyState } from "@/components/app/empty-state";
+import { OnboardingGuideCard } from "@/components/app/onboarding-guide-card";
 import { PageHeader } from "@/components/app/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -66,6 +67,16 @@ export default async function DashboardPage() {
         title="Research dashboard"
         description="See your sources, notes, subjects, and final review progress in one calm workspace built for student research."
       />
+      {stats.sources === 0 || stats.notes === 0 || stats.subjects === 0 ? (
+        <OnboardingGuideCard
+          stats={{
+            sources: stats.sources,
+            notes: stats.notes,
+            subjects: stats.subjects,
+            checklistCompletion: stats.checklistCompletion,
+          }}
+        />
+      ) : null}
 
       <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
         <Card className="border-border/70 bg-card/90">
@@ -314,7 +325,7 @@ export default async function DashboardPage() {
                     </p>
                   </div>
                   <Button variant="outline" asChild className="w-full justify-between">
-                    <Link href={item.href}>
+                    <Link href={item.href} title={item.description}>
                       Open
                       <ArrowRight className="size-4" />
                     </Link>

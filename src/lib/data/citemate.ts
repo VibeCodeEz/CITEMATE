@@ -7,7 +7,11 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type {
   ChecklistItemWithProgress,
   Note,
+  NoteVersion,
+  NoteVersionSnapshot,
   Source,
+  SourceVersion,
+  SourceVersionSnapshot,
   SourceReminderDismissal,
   SourceWithRelations,
   Subject,
@@ -25,6 +29,7 @@ export type SourceFilters = {
 
 export type NoteWithSource = Note & {
   source: Source | null;
+  versions: NoteVersion[];
 };
 
 function sortByMostRecent<T extends { updated_at: string }>(items: T[]) {
@@ -121,6 +126,64 @@ function hydrateSources(
   }));
 }
 
+function parseSourceVersionSnapshot(snapshot: unknown): SourceVersionSnapshot | null {
+  if (!snapshot || typeof snapshot !== "object") {
+    return null;
+  }
+
+  const candidate = snapshot as Partial<SourceVersionSnapshot>;
+
+  if (
+    typeof candidate.title !== "string" ||
+    !Array.isArray(candidate.authors) ||
+    !Array.isArray(candidate.tags) ||
+    !Array.isArray(candidate.subject_ids)
+  ) {
+    return null;
+  }
+
+  return {
+    title: candidate.title,
+    authors: candidate.authors.filter(
+      (value): value is string => typeof value === "string",
+    ),
+    year: typeof candidate.year === "number" ? candidate.year : null,
+    publisher: typeof candidate.publisher === "string" ? candidate.publisher : null,
+    url: typeof candidate.url === "string" ? candidate.url : null,
+    doi: typeof candidate.doi === "string" ? candidate.doi : null,
+    tags: candidate.tags.filter((value): value is string => typeof value === "string"),
+    abstract:
+      typeof candidate.abstract === "string" ? candidate.abstract : null,
+    source_type: candidate.source_type ?? "journal_article",
+    citation_style: candidate.citation_style ?? "apa",
+    subject_ids: candidate.subject_ids.filter(
+      (value): value is string => typeof value === "string",
+    ),
+  };
+}
+
+function parseNoteVersionSnapshot(snapshot: unknown): NoteVersionSnapshot | null {
+  if (!snapshot || typeof snapshot !== "object") {
+    return null;
+  }
+
+  const candidate = snapshot as Partial<NoteVersionSnapshot>;
+
+  if (
+    typeof candidate.title !== "string" ||
+    typeof candidate.content !== "string"
+  ) {
+    return null;
+  }
+
+  return {
+    title: candidate.title,
+    content: candidate.content,
+    source_id:
+      typeof candidate.source_id === "string" ? candidate.source_id : null,
+  };
+}
+
 function matchesSourceFilters(source: SourceWithRelations, filters: SourceFilters) {
   const query = filters.q?.trim().toLowerCase();
   const subjectId = filters.subjectId?.trim();
@@ -136,6 +199,8 @@ function matchesSourceFilters(source: SourceWithRelations, filters: SourceFilter
       source.publisher ?? "",
       source.abstract ?? "",
       source.tags.join(" "),
+      source.notes.map((note) => `${note.title} ${note.content}`).join(" "),
+      source.subjects.map((subject) => subject.name).join(" "),
       source.doi ?? "",
       source.url ?? "",
       source.source_type,
@@ -196,6 +261,7 @@ export const getWorkspaceData = cache(async () => {
     ...note,
     source:
       hydratedSources.find((source) => source.id === note.source_id) ?? null,
+    versions: [],
   }));
   const sourceReminders = getWorkspaceSourceReminders({
     sources: hydratedSources,
@@ -273,10 +339,40 @@ export async function getSourceDetailsData(sourceId: string) {
   const source =
     hydratedSources.find((currentSource) => currentSource.id === sourceId) ??
     null;
+  const supabase = await createSupabaseServerClient();
+  const versionResult = source
+    ? await supabase
+        .from("source_versions")
+        .select("*")
+        .eq("source_id", sourceId)
+        .order("created_at", { ascending: false })
+        .limit(12)
+    : null;
+
+  if (versionResult?.error) {
+    throw versionResult.error;
+  }
+
+  const versions: SourceVersion[] = (versionResult?.data ?? [])
+    .map((version) => {
+      const snapshot = parseSourceVersionSnapshot(version.snapshot);
+
+      if (!snapshot) {
+        return null;
+      }
+
+      return {
+        ...version,
+        snapshot,
+      };
+    })
+    .filter((value): value is SourceVersion => Boolean(value));
 
   return {
     source,
     subjects: subjectsWithCount,
+    versions,
+    allSources: hydratedSources,
   };
 }
 
@@ -293,12 +389,66 @@ export async function getSubjectsData() {
   };
 }
 
-export async function getNotesData() {
+export async function getNotesData(query?: string) {
   const { notesWithSource, hydratedSources } = await getWorkspaceData();
+  const supabase = await createSupabaseServerClient();
+  const versionResult = await supabase
+    .from("note_versions")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (versionResult.error) {
+    throw versionResult.error;
+  }
+
+  const versionsByNote = new Map<string, NoteVersion[]>();
+
+  (versionResult.data ?? []).forEach((version) => {
+    const snapshot = parseNoteVersionSnapshot(version.snapshot);
+
+    if (!snapshot) {
+      return;
+    }
+
+    const bucket = versionsByNote.get(version.note_id) ?? [];
+
+    if (bucket.length < 8) {
+      bucket.push({
+        ...version,
+        snapshot,
+      });
+      versionsByNote.set(version.note_id, bucket);
+    }
+  });
+
+  const rawQuery = query?.trim() ?? "";
+  const normalizedQuery = rawQuery.toLowerCase();
+  const filteredNotes = normalizedQuery
+    ? notesWithSource.filter((note) => {
+        const linkedSource =
+          hydratedSources.find((source) => source.id === note.source?.id) ?? null;
+        const haystack = [
+          note.title,
+          note.content,
+          linkedSource?.title ?? "",
+          linkedSource?.authors.join(" ") ?? "",
+          linkedSource?.tags.join(" ") ?? "",
+          linkedSource?.abstract ?? "",
+        ]
+          .join(" ")
+          .toLowerCase();
+
+        return haystack.includes(normalizedQuery);
+      })
+    : notesWithSource;
 
   return {
-    notes: notesWithSource,
+    notes: filteredNotes.map((note) => ({
+      ...note,
+      versions: versionsByNote.get(note.id) ?? [],
+    })),
     sources: hydratedSources,
+    query: rawQuery,
   };
 }
 
@@ -357,5 +507,38 @@ export async function getNeedsAttentionData() {
           reminder.key === "missing_website_url",
       ).length,
     },
+  };
+}
+
+export async function getWorkspaceExportData() {
+  const { profile, subjects, hydratedSources, notesWithSource, user } =
+    await getWorkspaceData();
+  const checklist = await getChecklistData();
+
+  return {
+    exportedAt: new Date().toISOString(),
+    account: {
+      id: user.id,
+      email: user.email ?? profile?.email ?? "",
+      fullName: profile?.full_name || user.user_metadata.full_name || null,
+      createdAt: user.created_at ?? null,
+    },
+    subjects,
+    sources: hydratedSources.map((source) => ({
+      ...source,
+      attachmentDownloadUrl: source.file_path
+        ? `/api/source-files/${source.id}`
+        : null,
+    })),
+    notes: notesWithSource.map((note) => ({
+      ...note,
+      source: note.source
+        ? {
+            id: note.source.id,
+            title: note.source.title,
+          }
+        : null,
+    })),
+    checklist,
   };
 }

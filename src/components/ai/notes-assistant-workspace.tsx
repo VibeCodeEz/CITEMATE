@@ -11,10 +11,20 @@ import {
   mapSourceToAssistantContext,
   mapSubjectToAssistantContext,
 } from "@/lib/ai/context";
-import type { Note, SourceWithRelations } from "@/types/app";
+import type { NoteVersion, SourceWithRelations } from "@/types/app";
 
 type NotesAssistantWorkspaceProps = {
-  notes: Array<Note & { source: { id: string } | null }>;
+  notes: Array<{
+    id: string;
+    title: string;
+    content: string;
+    created_at: string;
+    updated_at: string;
+    source_id: string | null;
+    user_id: string;
+    source: { id: string } | null;
+    versions: NoteVersion[];
+  }>;
   sources: SourceWithRelations[];
 };
 
@@ -81,7 +91,12 @@ export function NotesAssistantWorkspace({
           </div>
           <div className="grid gap-5 xl:grid-cols-1">
             {notes.map((note) => (
-              <NoteCard key={note.id} note={note} sources={sources} />
+              <NoteCard
+                key={note.id}
+                note={note}
+                sources={sources}
+                versions={note.versions}
+              />
             ))}
           </div>
         </section>

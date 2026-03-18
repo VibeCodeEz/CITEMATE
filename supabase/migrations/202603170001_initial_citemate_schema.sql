@@ -5,7 +5,23 @@ begin
   if not exists (
     select 1 from pg_type where typname = 'citation_style'
   ) then
-    create type public.citation_style as enum ('apa', 'mla', 'chicago');
+    create type public.citation_style as enum (
+      'apa',
+      'mla',
+      'chicago',
+      'harvard',
+      'ieee',
+      'ama',
+      'vancouver',
+      'turabian',
+      'acs',
+      'cse',
+      'oscola',
+      'bluebook',
+      'asa',
+      'apsa',
+      'nlm'
+    );
   end if;
   if not exists (
     select 1 from pg_type where typname = 'source_type'

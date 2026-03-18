@@ -12,7 +12,22 @@ export type Database = {
       [_ in never]: never;
     };
     Enums: {
-      citation_style: "apa" | "mla" | "chicago";
+      citation_style:
+        | "apa"
+        | "mla"
+        | "chicago"
+        | "harvard"
+        | "ieee"
+        | "ama"
+        | "vancouver"
+        | "turabian"
+        | "acs"
+        | "cse"
+        | "oscola"
+        | "bluebook"
+        | "asa"
+        | "apsa"
+        | "nlm";
       source_type:
         | "journal_article"
         | "book"
@@ -117,6 +132,40 @@ export type Database = {
             foreignKeyName: "notes_source_id_fkey";
             columns: ["source_id"];
             referencedRelation: "sources";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      note_versions: {
+        Row: {
+          created_at: string;
+          id: string;
+          note_id: string;
+          reason: string;
+          snapshot: Json;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          note_id: string;
+          reason?: string;
+          snapshot: Json;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          note_id?: string;
+          reason?: string;
+          snapshot?: Json;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "note_versions_note_id_fkey";
+            columns: ["note_id"];
+            referencedRelation: "notes";
             referencedColumns: ["id"];
           },
         ];
@@ -272,6 +321,40 @@ export type Database = {
           year?: number | null;
         };
         Relationships: [];
+      };
+      source_versions: {
+        Row: {
+          created_at: string;
+          id: string;
+          reason: string;
+          snapshot: Json;
+          source_id: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          reason?: string;
+          snapshot: Json;
+          source_id: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          reason?: string;
+          snapshot?: Json;
+          source_id?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "source_versions_source_id_fkey";
+            columns: ["source_id"];
+            referencedRelation: "sources";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       subjects: {
         Row: {

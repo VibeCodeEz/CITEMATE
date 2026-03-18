@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useRef, useState, useTransition } from "react";
+import { useEffect, useId, useRef, useState, useTransition } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useForm, useWatch } from "react-hook-form";
@@ -68,7 +68,10 @@ export function NoteFormDialog({
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
   const [editorMode, setEditorMode] = useState<"write" | "preview">("write");
+  const [draftAvailable, setDraftAvailable] = useState(false);
+  const [draftSavedAt, setDraftSavedAt] = useState<string | null>(null);
   const isEditing = Boolean(note);
+  const draftStorageKey = `citemate:note-draft:${note?.id ?? lockedSourceId ?? "new"}`;
   const form = useForm<NoteInput>({
     resolver: zodResolver(noteSchema),
     defaultValues: {
@@ -87,9 +90,123 @@ export function NoteFormDialog({
     control: form.control,
     name: "content",
   });
+  const draftValues = useWatch({
+    control: form.control,
+  });
   const linkedSource =
     sources.find((source) => source.id === (lockedSourceId ?? selectedSourceId)) ??
     null;
+
+  useEffect(() => {
+    if (!open || !form.formState.isDirty) {
+      return;
+    }
+
+    const timeout = window.setTimeout(() => {
+      const savedAt = new Date().toISOString();
+
+      window.localStorage.setItem(
+        draftStorageKey,
+        JSON.stringify({
+          values: draftValues,
+          savedAt,
+        }),
+      );
+      setDraftSavedAt(savedAt);
+    }, 800);
+
+    return () => window.clearTimeout(timeout);
+  }, [draftStorageKey, draftValues, form.formState.isDirty, open]);
+
+  useEffect(() => {
+    if (!open || !form.formState.isDirty) {
+      return;
+    }
+
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [form.formState.isDirty, open]);
+
+  function clearDraft() {
+    window.localStorage.removeItem(draftStorageKey);
+    setDraftAvailable(false);
+    setDraftSavedAt(null);
+  }
+
+  function loadDraftState() {
+    const draft = window.localStorage.getItem(draftStorageKey);
+
+    if (!draft) {
+      setDraftAvailable(false);
+      setDraftSavedAt(null);
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(draft) as {
+        values?: NoteInput;
+        savedAt?: string;
+      };
+
+      setDraftAvailable(Boolean(parsed.values));
+      setDraftSavedAt(parsed.savedAt ?? null);
+    } catch {
+      setDraftAvailable(false);
+      setDraftSavedAt(null);
+    }
+  }
+
+  function restoreDraft() {
+    const draft = window.localStorage.getItem(draftStorageKey);
+
+    if (!draft) {
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(draft) as {
+        values?: NoteInput;
+        savedAt?: string;
+      };
+
+      if (!parsed.values) {
+        return;
+      }
+
+      form.reset(parsed.values);
+      setDraftAvailable(false);
+      setDraftSavedAt(parsed.savedAt ?? null);
+      toast.success("Local note draft restored.");
+    } catch {
+      toast.error("We couldn't restore that local draft.");
+    }
+  }
+
+  function handleOpenChange(nextOpen: boolean) {
+    if (!nextOpen && open && form.formState.isDirty) {
+      const confirmed = window.confirm(
+        "Close this note editor? Your unsaved changes are still autosaved on this device until you save or dismiss the draft.",
+      );
+
+      if (!confirmed) {
+        return;
+      }
+    }
+
+    if (!nextOpen) {
+      setEditorMode("write");
+    } else {
+      loadDraftState();
+    }
+
+    setOpen(nextOpen);
+  }
 
   function applyFormatting(action: NoteMarkdownAction) {
     const textarea = textareaRef.current;
@@ -125,13 +242,14 @@ export function NoteFormDialog({
         variant={isEditing ? "outline" : "default"}
         onClick={() => {
           setEditorMode("write");
+          loadDraftState();
           setOpen(true);
         }}
       >
         {isEditing ? <SquarePen className="size-4" /> : <Plus className="size-4" />}
         {isEditing ? "Edit" : "Add note"}
       </Button>
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>{isEditing ? "Edit note" : "Write a note"}</DialogTitle>
@@ -156,12 +274,36 @@ export function NoteFormDialog({
                 }
 
                 toast.success(result.message);
+                clearDraft();
                 setOpen(false);
                 setEditorMode("write");
                 router.refresh();
               });
             })}
           >
+            {draftAvailable ? (
+              <div className="rounded-[1.5rem] border border-border/80 bg-secondary/25 p-4">
+                <p className="text-sm font-medium">Local draft available</p>
+                <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                  {draftSavedAt
+                    ? `Autosaved on this device at ${new Intl.DateTimeFormat("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        hour: "numeric",
+                        minute: "2-digit",
+                      }).format(new Date(draftSavedAt))}.`
+                    : "A local draft is saved on this device."}
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Button type="button" size="sm" variant="outline" onClick={restoreDraft}>
+                    Restore draft
+                  </Button>
+                  <Button type="button" size="sm" variant="ghost" onClick={clearDraft}>
+                    Dismiss draft
+                  </Button>
+                </div>
+              </div>
+            ) : null}
             <div className="space-y-2">
               <Label htmlFor={`${fieldId}-title`}>Title</Label>
               <Input
@@ -316,6 +458,11 @@ export function NoteFormDialog({
                   ? "Save changes"
                   : "Save note"}
             </Button>
+            <p className="text-center text-xs text-muted-foreground">
+              {draftSavedAt
+                ? "Local draft autosave is on for this device while you edit."
+                : "Unsaved note edits stay local until you save."}
+            </p>
           </form>
         </DialogContent>
       </Dialog>

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  citationStyleSchema,
   normalizeSourceDoi,
   sourceMetadataLookupSchema,
   sourceSchema,
@@ -52,4 +53,29 @@ test("requires a DOI or URL for metadata lookup", () => {
   }
 
   assert.match(result.error.flatten().fieldErrors.doi?.[0] ?? "", /DOI or URL/i);
+});
+
+test("accepts every supported citation style", () => {
+  const styles = [
+    "apa",
+    "mla",
+    "chicago",
+    "harvard",
+    "ieee",
+    "ama",
+    "vancouver",
+    "turabian",
+    "acs",
+    "cse",
+    "oscola",
+    "bluebook",
+    "asa",
+    "apsa",
+    "nlm",
+  ] as const;
+
+  for (const style of styles) {
+    const result = citationStyleSchema.safeParse(style);
+    assert.equal(result.success, true);
+  }
 });

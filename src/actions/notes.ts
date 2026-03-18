@@ -10,6 +10,7 @@ import {
 import { requireUser } from "@/lib/auth";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { noteSchema, type NoteInput } from "@/lib/validations/note";
+import type { NoteVersionSnapshot } from "@/types/app";
 
 function revalidateNoteViews(sourceIds: string[] = []) {
   revalidatePath("/dashboard");
@@ -18,6 +19,34 @@ function revalidateNoteViews(sourceIds: string[] = []) {
 
   sourceIds.forEach((sourceId) => {
     revalidatePath(`/dashboard/sources/${sourceId}`);
+  });
+}
+
+function buildNoteVersionSnapshot(args: {
+  title: string;
+  content: string;
+  sourceId: string | null;
+}): NoteVersionSnapshot {
+  return {
+    title: args.title,
+    content: args.content,
+    source_id: args.sourceId,
+  };
+}
+
+async function saveNoteVersion(args: {
+  userId: string;
+  noteId: string;
+  snapshot: NoteVersionSnapshot;
+  reason: string;
+}) {
+  const supabase = await createSupabaseServerClient();
+
+  await supabase.from("note_versions").insert({
+    user_id: args.userId,
+    note_id: args.noteId,
+    snapshot: args.snapshot,
+    reason: args.reason,
   });
 }
 
@@ -38,7 +67,7 @@ export async function upsertNoteAction(values: NoteInput): Promise<ActionResult>
   if (parsed.data.id) {
     const { data: existingNote, error: existingNoteError } = await supabase
       .from("notes")
-      .select("source_id")
+      .select("title,content,source_id")
       .eq("id", parsed.data.id)
       .eq("user_id", user.id)
       .maybeSingle();
@@ -52,6 +81,17 @@ export async function upsertNoteAction(values: NoteInput): Promise<ActionResult>
     }
 
     previousSourceId = existingNote.source_id;
+
+    await saveNoteVersion({
+      userId: user.id,
+      noteId: parsed.data.id,
+      snapshot: buildNoteVersionSnapshot({
+        title: existingNote.title,
+        content: existingNote.content,
+        sourceId: existingNote.source_id,
+      }),
+      reason: "before_update",
+    });
   }
 
   if (parsed.data.sourceId) {
@@ -98,15 +138,101 @@ export async function upsertNoteAction(values: NoteInput): Promise<ActionResult>
     return successResult("Note updated.");
   }
 
-  const { error } = await supabase.from("notes").insert(payload);
+  const { data: createdNote, error } = await supabase
+    .from("notes")
+    .insert(payload)
+    .select("id")
+    .single();
 
   if (error) {
     return errorResult(error.message);
   }
 
+  await saveNoteVersion({
+    userId: user.id,
+    noteId: createdNote.id,
+    snapshot: buildNoteVersionSnapshot({
+      title: payload.title,
+      content: payload.content,
+      sourceId: payload.source_id,
+    }),
+    reason: "created",
+  });
+
   revalidateNoteViews(parsed.data.sourceId ? [parsed.data.sourceId] : []);
 
   return successResult("Note saved.");
+}
+
+export async function restoreNoteVersionAction(
+  noteId: string,
+  versionId: string,
+): Promise<ActionResult> {
+  const user = await requireUser();
+  const supabase = await createSupabaseServerClient();
+  const [{ data: version, error: versionError }, { data: note, error: noteError }] =
+    await Promise.all([
+      supabase
+        .from("note_versions")
+        .select("snapshot")
+        .eq("id", versionId)
+        .eq("note_id", noteId)
+        .eq("user_id", user.id)
+        .maybeSingle(),
+      supabase
+        .from("notes")
+        .select("title,content,source_id")
+        .eq("id", noteId)
+        .eq("user_id", user.id)
+        .maybeSingle(),
+    ]);
+
+  if (versionError) {
+    return errorResult(versionError.message);
+  }
+
+  if (noteError) {
+    return errorResult(noteError.message);
+  }
+
+  if (!version || !note) {
+    return errorResult("We couldn't find that saved note version.");
+  }
+
+  await saveNoteVersion({
+    userId: user.id,
+    noteId,
+    snapshot: buildNoteVersionSnapshot({
+      title: note.title,
+      content: note.content,
+      sourceId: note.source_id,
+    }),
+    reason: "before_restore",
+  });
+
+  const snapshot = version.snapshot as unknown as NoteVersionSnapshot;
+
+  const { error } = await supabase
+    .from("notes")
+    .update({
+      title: snapshot.title,
+      content: snapshot.content,
+      source_id: snapshot.source_id,
+    })
+    .eq("id", noteId)
+    .eq("user_id", user.id);
+
+  if (error) {
+    return errorResult(error.message);
+  }
+
+  revalidateNoteViews(
+    [note.source_id, snapshot.source_id].filter(
+      (value): value is string => Boolean(value),
+    ),
+  );
+
+  return successResult("Note restored to that saved version.");
 }
 
 export async function deleteNoteAction(id: string): Promise<ActionResult> {

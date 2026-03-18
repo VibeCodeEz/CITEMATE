@@ -73,9 +73,10 @@ export default async function HomePage() {
                 Keep every source, note, and citation in a workspace that feels calm under pressure.
               </h1>
               <p className="max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg sm:leading-8">
-                CiteMate helps you save academic sources, generate APA 7, MLA 9,
-                and Chicago citations, track notes, and run a final
-                plagiarism-ready review before submission.
+                CiteMate helps you save academic sources, generate APA, MLA,
+                Chicago, Harvard, IEEE, AMA, Vancouver, Turabian, ACS, CSE,
+                OSCOLA, Bluebook, ASA, APSA, and NLM citations, track notes,
+                and run a final plagiarism-ready review before submission.
               </p>
             </div>
             <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">

@@ -37,6 +37,57 @@ test("formats Chicago citation with publisher and DOI", () => {
   );
 });
 
+test("formats newly supported citation styles for a journal article", () => {
+  assert.equal(
+    generateCitation(journalSource, "harvard"),
+    "Moore, D. and Shah, P. (2023) Social Capital in College Success. Journal of Student Research. https://doi.org/10.1000/social-capital",
+  );
+  assert.equal(
+    generateCitation(journalSource, "ieee"),
+    '[1] Moore D, Shah P. "Social Capital in College Success." Journal of Student Research. 2023. https://doi.org/10.1000/social-capital',
+  );
+  assert.equal(
+    generateCitation(journalSource, "ama"),
+    "1. Moore D, Shah P. Social Capital in College Success. 2023. Journal of Student Research. https://doi.org/10.1000/social-capital",
+  );
+  assert.equal(
+    generateCitation(journalSource, "vancouver"),
+    "1. Moore D, Shah P. Social Capital in College Success. 2023. Journal of Student Research. https://doi.org/10.1000/social-capital",
+  );
+  assert.equal(
+    generateCitation(journalSource, "turabian"),
+    'Dana Moore and Priya Shah. "Social Capital in College Success." Journal of Student Research, 2023. https://doi.org/10.1000/social-capital',
+  );
+  assert.equal(
+    generateCitation(journalSource, "acs"),
+    "1. Moore D, Shah P. Social Capital in College Success. Journal of Student Research. 2023. https://doi.org/10.1000/social-capital",
+  );
+  assert.equal(
+    generateCitation(journalSource, "cse"),
+    "1. Moore D, Shah P. Social Capital in College Success. Journal of Student Research. 2023. https://doi.org/10.1000/social-capital",
+  );
+  assert.equal(
+    generateCitation(journalSource, "oscola"),
+    "Dana Moore and Priya Shah, 'Social Capital in College Success' (Journal of Student Research 2023) https://doi.org/10.1000/social-capital",
+  );
+  assert.equal(
+    generateCitation(journalSource, "bluebook"),
+    "Dana Moore and Priya Shah, Social Capital in College Success (Journal of Student Research 2023) https://doi.org/10.1000/social-capital",
+  );
+  assert.equal(
+    generateCitation(journalSource, "asa"),
+    'Moore, D., and Shah, P.. 2023. "Social Capital in College Success." Journal of Student Research. https://doi.org/10.1000/social-capital',
+  );
+  assert.equal(
+    generateCitation(journalSource, "apsa"),
+    "Moore, D. and Shah, P. (2023) Social Capital in College Success. Journal of Student Research. https://doi.org/10.1000/social-capital",
+  );
+  assert.equal(
+    generateCitation(journalSource, "nlm"),
+    "1. Moore D, Shah P. Social Capital in College Success. 2023. Journal of Student Research. https://doi.org/10.1000/social-capital",
+  );
+});
+
 test("handles missing fields gracefully", () => {
   assert.equal(
     generateCitation(

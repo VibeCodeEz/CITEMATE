@@ -1,29 +1,48 @@
+import { formatAcsCitation } from "@/lib/citations/styles/acs";
+import { formatAmaCitation } from "@/lib/citations/styles/ama";
 import { formatApaCitation } from "@/lib/citations/styles/apa";
+import { formatApsaCitation } from "@/lib/citations/styles/apsa";
+import { formatAsaCitation } from "@/lib/citations/styles/asa";
+import { formatBluebookCitation } from "@/lib/citations/styles/bluebook";
 import { formatChicagoCitation } from "@/lib/citations/styles/chicago";
+import { formatCseCitation } from "@/lib/citations/styles/cse";
+import { formatHarvardCitation } from "@/lib/citations/styles/harvard";
+import { formatIeeeCitation } from "@/lib/citations/styles/ieee";
 import { formatMlaCitation } from "@/lib/citations/styles/mla";
+import { formatNlmCitation } from "@/lib/citations/styles/nlm";
+import { formatOscolaCitation } from "@/lib/citations/styles/oscola";
+import { formatTurabianCitation } from "@/lib/citations/styles/turabian";
+import { formatVancouverCitation } from "@/lib/citations/styles/vancouver";
 import type {
   CitationSource,
   CitationStyleDefinition,
 } from "@/lib/citations/types";
+import { citationStyleOptions } from "@/lib/validations/source";
 import type { CitationStyle, SourceWithRelations } from "@/types/app";
 
-const citationStyles: CitationStyleDefinition[] = [
-  {
-    key: "apa",
-    label: "APA 7",
-    formatter: formatApaCitation,
-  },
-  {
-    key: "mla",
-    label: "MLA 9",
-    formatter: formatMlaCitation,
-  },
-  {
-    key: "chicago",
-    label: "Chicago",
-    formatter: formatChicagoCitation,
-  },
-];
+const citationFormatterMap: Record<CitationStyle, CitationStyleDefinition["formatter"]> = {
+  apa: formatApaCitation,
+  mla: formatMlaCitation,
+  chicago: formatChicagoCitation,
+  harvard: formatHarvardCitation,
+  ieee: formatIeeeCitation,
+  ama: formatAmaCitation,
+  vancouver: formatVancouverCitation,
+  turabian: formatTurabianCitation,
+  acs: formatAcsCitation,
+  cse: formatCseCitation,
+  oscola: formatOscolaCitation,
+  bluebook: formatBluebookCitation,
+  asa: formatAsaCitation,
+  apsa: formatApsaCitation,
+  nlm: formatNlmCitation,
+};
+
+const citationStyles: CitationStyleDefinition[] = citationStyleOptions.map((style) => ({
+  key: style.value,
+  label: style.label,
+  formatter: citationFormatterMap[style.value],
+}));
 
 const citationStyleMap = new Map(
   citationStyles.map((style) => [style.key, style]),

@@ -36,7 +36,23 @@ const optionalDoi = z
   .optional()
   .or(z.literal(""));
 
-export const citationStyleSchema = z.enum(["apa", "mla", "chicago"]);
+export const citationStyleSchema = z.enum([
+  "apa",
+  "mla",
+  "chicago",
+  "harvard",
+  "ieee",
+  "ama",
+  "vancouver",
+  "turabian",
+  "acs",
+  "cse",
+  "oscola",
+  "bluebook",
+  "asa",
+  "apsa",
+  "nlm",
+]);
 export const sourceTypeSchema = z.enum([
   "journal_article",
   "book",
@@ -101,6 +117,24 @@ export const sourceTypeOptions = [
   { value: "thesis", label: "Thesis" },
   { value: "conference_paper", label: "Conference paper" },
   { value: "other", label: "Other" },
+] as const;
+
+export const citationStyleOptions = [
+  { value: "apa", label: "APA 7" },
+  { value: "mla", label: "MLA 9" },
+  { value: "chicago", label: "Chicago" },
+  { value: "harvard", label: "Harvard" },
+  { value: "ieee", label: "IEEE" },
+  { value: "ama", label: "AMA" },
+  { value: "vancouver", label: "Vancouver" },
+  { value: "turabian", label: "Turabian" },
+  { value: "acs", label: "ACS" },
+  { value: "cse", label: "CSE" },
+  { value: "oscola", label: "OSCOLA" },
+  { value: "bluebook", label: "Bluebook" },
+  { value: "asa", label: "ASA" },
+  { value: "apsa", label: "APSA" },
+  { value: "nlm", label: "NLM" },
 ] as const;
 
 export function parseAuthors(authorsText: string) {

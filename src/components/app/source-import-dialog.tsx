@@ -7,12 +7,19 @@ import { toast } from "sonner";
 
 import { importSourcesAction } from "@/actions/sources";
 import {
+  citationStyleOptions,
+  sourceTypeOptions,
+} from "@/lib/validations/source";
+import type {
+  CitationStyle,
+  SourceType,
+} from "@/types/app";
+import {
   buildCsvImportPreview,
   inferCsvFieldMapping,
   parseCsv,
 } from "@/lib/source-import/csv";
 import type { CsvSourceField, ImportExistingSource, ParsedCsv } from "@/lib/source-import/types";
-import type { CitationStyle, SourceType } from "@/types/app";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -190,13 +197,11 @@ export function SourceImportDialog({
                               setSourceTypeDefault(event.target.value as SourceType)
                             }
                           >
-                            <option value="journal_article">Journal article</option>
-                            <option value="book">Book</option>
-                            <option value="website">Website</option>
-                            <option value="report">Report</option>
-                            <option value="thesis">Thesis</option>
-                            <option value="conference_paper">Conference paper</option>
-                            <option value="other">Other</option>
+                            {sourceTypeOptions.map((option) => (
+                              <option key={option.value} value={option.value}>
+                                {option.label}
+                              </option>
+                            ))}
                           </select>
                         </div>
                         <div className="space-y-1">
@@ -211,9 +216,11 @@ export function SourceImportDialog({
                               )
                             }
                           >
-                            <option value="apa">APA 7</option>
-                            <option value="mla">MLA 9</option>
-                            <option value="chicago">Chicago</option>
+                            {citationStyleOptions.map((option) => (
+                              <option key={option.value} value={option.value}>
+                                {option.label}
+                              </option>
+                            ))}
                           </select>
                         </div>
                       </div>

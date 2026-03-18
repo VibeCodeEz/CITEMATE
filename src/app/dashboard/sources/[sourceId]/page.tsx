@@ -17,6 +17,7 @@ import { NoteFormDialog } from "@/components/app/note-form-dialog";
 import { PageHeader } from "@/components/app/page-header";
 import { SourceAttachmentPanel } from "@/components/app/source-attachment-panel";
 import { SourceFormDialog } from "@/components/app/source-form-dialog";
+import { SourceVersionHistoryCard } from "@/components/app/source-version-history-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -49,7 +50,7 @@ export default async function SourceDetailsPage({
   params,
 }: SourceDetailsPageProps) {
   const { sourceId } = await params;
-  const { source, subjects } = await getSourceDetailsData(sourceId);
+  const { source, subjects, versions, allSources } = await getSourceDetailsData(sourceId);
 
   if (!source) {
     notFound();
@@ -82,7 +83,11 @@ export default async function SourceDetailsPage({
                 Back to sources
               </Link>
             </Button>
-            <SourceFormDialog source={source} subjects={subjects} />
+            <SourceFormDialog
+              source={source}
+              subjects={subjects}
+              existingSources={allSources}
+            />
           </>
         }
       />
@@ -187,6 +192,7 @@ export default async function SourceDetailsPage({
               fileUploadedAt={source.file_uploaded_at}
             />
           ) : null}
+          <SourceVersionHistoryCard sourceId={source.id} versions={versions} />
           <Card className="border-border/70 bg-card/90">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 font-serif text-3xl tracking-tight">
@@ -260,6 +266,7 @@ export default async function SourceDetailsPage({
                         sources={[source]}
                         lockedSource={source}
                         compact
+                        versions={[]}
                       />
                     ))}
                   </div>

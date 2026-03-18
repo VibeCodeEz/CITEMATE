@@ -65,6 +65,7 @@ export function TaskActionButtons({
             size="sm"
             variant={activeTask === task ? "default" : "outline"}
             disabled={disabled}
+            title={`Ask AI to ${config.label.toLowerCase()}`}
             onClick={() => onSelect(task)}
           >
             <Icon className="size-4" />

@@ -1,0 +1,12 @@
+alter type public.citation_style add value if not exists 'harvard';
+alter type public.citation_style add value if not exists 'ieee';
+alter type public.citation_style add value if not exists 'ama';
+alter type public.citation_style add value if not exists 'vancouver';
+alter type public.citation_style add value if not exists 'turabian';
+alter type public.citation_style add value if not exists 'acs';
+alter type public.citation_style add value if not exists 'cse';
+alter type public.citation_style add value if not exists 'oscola';
+alter type public.citation_style add value if not exists 'bluebook';
+alter type public.citation_style add value if not exists 'asa';
+alter type public.citation_style add value if not exists 'apsa';
+alter type public.citation_style add value if not exists 'nlm';
