@@ -23,7 +23,10 @@ CiteMate is a student-focused citation and research workspace built with Next.js
 - BibTeX and RIS export for single sources or selected source sets
 - CSV import with field mapping, preview, validation, and partial success import
 - Source-linked note taking with markdown editing and sanitized preview/rendering
+- Saved RRL note templates with starter structures and device-local custom templates
 - RRL-focused assistant actions for literature discovery, RRL note building, theme grouping, related studies matrices, outline generation, and research gap finding
+- Subject research toolkit with related studies matrix UI, theme boards, and literature review export
+- Multi-source compare view for side-by-side source analysis before drafting or citation cleanup
 - PDF attachment preview with secure signed file access
 - Subject analytics for tags, source distribution, source types, and note coverage
 - Needs Attention reminders for incomplete citation details and missing abstracts
@@ -157,6 +160,8 @@ npm run build
 - Forms use Zod validation and friendly error messaging.
 - DOI and URL metadata fetch never silently overwrites manually edited fields.
 - AI context controls can now include a compact collection of related sources and notes for subject-level RRL synthesis tasks.
+- Subjects now include a research toolkit for theme boards, matrix review, and literature-review markdown export.
+- Sources now support side-by-side compare for selected records, and notes include reusable RRL templates.
 - Layouts are responsive across desktop and mobile widths.
 
 ## Additional Docs

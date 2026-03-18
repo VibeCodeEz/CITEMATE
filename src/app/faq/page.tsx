@@ -78,6 +78,11 @@ const faqSections = [
         answer:
           "Yes. Subjects still provide the main container, but the assistant can now use a subject-level collection of sources and notes to group studies by theme, build a related studies matrix, and draft an RRL structure.",
       },
+      {
+        question: "Can I compare multiple sources side by side?",
+        answer:
+          "Yes. On the Sources page, select two or more saved sources and open the compare view to review metadata, abstract, tags, subjects, and linked note counts together before drafting a synthesis.",
+      },
     ],
   },
   {
@@ -128,6 +133,11 @@ const faqSections = [
           "CiteMate now includes AI actions for literature discovery guidance, RRL note building, theme grouping, related studies matrix drafting, RRL outline generation, and research gap finding. These outputs are suggestions that still need your review.",
       },
       {
+        question: "Does CiteMate have non-AI RRL tools too?",
+        answer:
+          "Yes. The Subjects page now includes a related studies matrix UI, theme boards, and literature review export, while the note editor includes starter and saved RRL templates.",
+      },
+      {
         question: "Should I paste sensitive personal or confidential content into the AI assistant?",
         answer:
           "Use judgment. CiteMate includes context controls and privacy-aware monitoring, but you should still avoid sending especially sensitive, confidential, or regulated information unless you are sure it is appropriate for your use case.",
@@ -160,6 +170,11 @@ const faqSections = [
           "The export includes structured workspace data such as sources, notes, subjects, checklist progress, and attachment metadata. If you need full offline copies of uploaded files, download important attachments separately as well.",
       },
       {
+        question: "What is included in the literature review export?",
+        answer:
+          "The subject-level literature review export currently produces a markdown pack with the subject overview, theme boards, related studies matrix, and source snapshots based on the saved sources and notes in that subject.",
+      },
+      {
         question: "Can I reset my password?",
         answer:
           "Yes. CiteMate includes password recovery and reset flows so users can request a reset link and choose a new password without needing manual support.",
@@ -182,9 +197,19 @@ const faqSections = [
           "Gap finding is only as good as the sources and notes you provide. If the current subject has too few studies, thin notes, or missing abstracts, the assistant will produce broader and more cautious suggestions instead of strong gap claims.",
       },
       {
+        question: "Why do my theme boards look weak or incomplete?",
+        answer:
+          "Theme boards currently rely heavily on the tags and saved source details in your project. If your sources have thin metadata or inconsistent tags, the boards will look less useful until the records are cleaned up.",
+      },
+      {
         question: "Why did my draft disappear on another device?",
         answer:
           "Local autosave drafts stay on the device and browser where they were created. They are meant to prevent accidental loss while editing, not to sync across devices.",
+      },
+      {
+        question: "Why are my saved RRL templates missing on another browser or computer?",
+        answer:
+          "Saved note templates are currently stored locally on the device and browser where they were created. They are not synced through Supabase yet, so they will not automatically appear elsewhere.",
       },
       {
         question: "Why can I see a duplicate warning even when I want to save the source?",
@@ -221,8 +246,8 @@ export default function FaqPage() {
             </h1>
             <p className="mt-4 max-w-3xl text-base leading-7 text-muted-foreground">
               A fuller guide to how CiteMate works, what the AI sees, how
-              citations are generated, and how to protect your work as your
-              research workspace grows.
+              citations are generated, how the RRL toolkit works, and how to
+              protect your work as your research workspace grows.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Button asChild>

@@ -21,6 +21,7 @@ import { toast } from "sonner";
 
 import { upsertNoteAction } from "@/actions/notes";
 import { NoteMarkdown } from "@/components/app/note-markdown";
+import { NoteTemplatePanel } from "@/components/app/note-template-panel";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -352,6 +353,31 @@ export function NoteFormDialog({
             )}
             <div className="space-y-2">
               <Label htmlFor={`${fieldId}-content`}>Note content</Label>
+              <NoteTemplatePanel
+                currentTitle={form.getValues("title") ?? ""}
+                currentContent={noteContent ?? ""}
+                onApply={(template) => {
+                  const confirmed = window.confirm(
+                    "Replace the current note title and content with this template?",
+                  );
+
+                  if (!confirmed) {
+                    return;
+                  }
+
+                  form.setValue("title", template.title, {
+                    shouldDirty: true,
+                    shouldTouch: true,
+                    shouldValidate: true,
+                  });
+                  form.setValue("content", template.content, {
+                    shouldDirty: true,
+                    shouldTouch: true,
+                    shouldValidate: true,
+                  });
+                  toast.success("Template applied.");
+                }}
+              />
               <div className="space-y-3 rounded-[1.5rem] border border-border/80 bg-secondary/20 p-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="flex flex-wrap gap-2">

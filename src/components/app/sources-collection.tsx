@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { SourceCard } from "@/components/app/source-card";
+import { MultiSourceCompareDialog } from "@/components/app/multi-source-compare-dialog";
 import { SourceExportActions } from "@/components/app/source-export-actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -54,6 +55,10 @@ export function SourcesCollection({
             <Button type="button" variant="ghost" size="sm" onClick={handleToggleAll}>
               {allSelected ? "Clear page selection" : "Select all on page"}
             </Button>
+            <MultiSourceCompareDialog
+              sources={selectedSources}
+              disabled={selectedSources.length < 2}
+            />
             <SourceExportActions
               sources={selectedSources}
               disabled={selectedSources.length === 0}

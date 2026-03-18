@@ -25,7 +25,7 @@ export default async function NotesPage({ searchParams }: NotesPageProps) {
       <PageHeader
         eyebrow="Writing support"
         title="Notes"
-        description="Save article summaries, quotes, and synthesis drafts in clean multiline notes connected to your sources."
+        description="Save article summaries, quotes, synthesis drafts, and RRL notes in clean multiline notes connected to your sources."
         actions={<NoteFormDialog sources={sources} />}
       />
       <Card className="border-border/70 bg-card/90">
@@ -62,7 +62,7 @@ export default async function NotesPage({ searchParams }: NotesPageProps) {
           description={
             query
               ? "Try a different keyword or search by linked source title, tag, abstract, or author."
-              : "Create a note while reading to preserve quotes, arguments, and your own interpretation."
+              : "Create a note while reading to preserve quotes, arguments, thematic synthesis, and your own interpretation."
           }
           action={<NoteFormDialog sources={sources} />}
         />

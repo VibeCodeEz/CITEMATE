@@ -32,6 +32,11 @@ export function OnboardingGuideCard({ stats }: OnboardingGuideCardProps) {
       href: "/dashboard/notes",
     },
     {
+      label: "Open the subject toolkit",
+      done: stats.subjects > 0 && stats.sources > 0,
+      href: "/dashboard/subjects",
+    },
+    {
       label: "Review the final RRL checklist",
       done: stats.checklistCompletion > 0,
       href: "/dashboard/checklist",
@@ -85,7 +90,7 @@ export function OnboardingGuideCard({ stats }: OnboardingGuideCardProps) {
                 save a source with title, authors, and DOI, then add one note with a quote and your own takeaway.
               </p>
               <p>
-                Once that is in place, open the citation preview, use the assistant for RRL drafting if needed,
+                Once that is in place, open the subject toolkit for theme boards or the matrix view, use the assistant for RRL drafting if needed,
                 and finish with the RRL and originality checklist before submission.
               </p>
             </div>

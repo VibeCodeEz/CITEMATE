@@ -62,27 +62,47 @@ const steps = [
       "From a source, note, or subject, run AI actions like Find literature, Build RRL note, Group by theme, Build studies matrix, Generate RRL outline, and Find research gaps. Treat the output as a guided draft and verify it against your saved materials.",
   },
   {
-    step: "11. Use search and filters to find material quickly",
+    step: "11. Use saved RRL note templates to draft faster",
+    detail:
+      "Open the note editor and start from a built-in RRL template like summary, thematic synthesis, or related study structure. You can also save your own template on the current device for repeated assignments.",
+  },
+  {
+    step: "12. Compare multiple sources side by side",
+    detail:
+      "In the Sources page, select at least two sources and open Compare selected to review abstracts, tags, subjects, URLs, DOIs, and note counts before writing a synthesis section.",
+  },
+  {
+    step: "13. Use the subject research toolkit for synthesis",
+    detail:
+      "Open the Subjects page to review the related studies matrix, browse theme boards built from your source themes or tags, and understand how a topic cluster is shaping up.",
+  },
+  {
+    step: "14. Export a literature review pack when you need a draft bundle",
+    detail:
+      "From the Subjects page, export a literature review markdown file that combines subject overview, theme boards, related studies matrix, and source snapshots into one portable draft pack.",
+  },
+  {
+    step: "15. Use search and filters to find material quickly",
     detail:
       "Search across titles, authors, abstracts, tags, subjects, URLs, DOIs, and linked note content. Filter by subject, source type, year, citation style, and tags when your library gets larger.",
   },
   {
-    step: "12. Use AI carefully with the context controls",
+    step: "16. Use AI carefully with the context controls",
     detail:
       "Before sending an AI request, review exactly which source, note, subject, collection, reminder, or follow-up context will be included. Turn off anything you do not want to share for that request.",
   },
   {
-    step: "13. Restore an earlier version if an edit goes wrong",
+    step: "17. Restore an earlier version if an edit goes wrong",
     detail:
       "If you overwrite a source or note in a way you regret, open the saved version history and restore an earlier snapshot instead of rebuilding everything from memory.",
   },
   {
-    step: "14. Export your workspace before major changes or deletion",
+    step: "18. Export your workspace before major changes or deletion",
     detail:
       "Use the workspace export in settings when you want a backup of your structured research data. If you rely on uploaded files, download important attachments separately too.",
   },
   {
-    step: "15. Manage password reset, support, and account deletion from settings",
+    step: "19. Manage password reset, support, and account deletion from settings",
     detail:
       "CiteMate includes password recovery, settings-based account controls, and deletion tools. Before deleting an account, export first so you keep a copy of what matters.",
   },
@@ -92,6 +112,7 @@ const quickTips = [
   "Start with one subject, one source, and one linked note before trying every feature.",
   "Use metadata lookup to save time, but always check the imported details.",
   "Use subject-level AI tools for synthesis, but verify every gap claim against your sources.",
+  "Use tags consistently so the theme boards and matrix summaries stay useful.",
   "Treat duplicate warnings as a moment to review, not as an error.",
   "Use AI as a helper, not as your final authority.",
   "Export before major cleanup or account deletion.",

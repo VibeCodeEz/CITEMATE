@@ -3,6 +3,7 @@ import { SubjectsAssistantWorkspace } from "@/components/ai/subjects-assistant-w
 import { DeleteButton } from "@/components/app/delete-button";
 import { EmptyState } from "@/components/app/empty-state";
 import { PageHeader } from "@/components/app/page-header";
+import { SubjectResearchToolkit } from "@/components/app/subject-research-toolkit";
 import { SubjectAnalyticsSection } from "@/components/app/subject-analytics-section";
 import { SubjectFormDialog } from "@/components/app/subject-form-dialog";
 import { Badge } from "@/components/ui/badge";
@@ -17,17 +18,20 @@ export default async function SubjectsPage() {
       <PageHeader
         eyebrow="Organization"
         title="Subjects"
-        description="Create categories for courses, seminars, or themes, then assign each source to one or more subjects and track how your research is distributed."
+        description="Create categories for courses, seminars, or themes, then assign each source to one or more subjects and use subject-level RRL tools for synthesis, comparison, and export."
         actions={<SubjectFormDialog />}
       />
       {subjects.length > 0 ? (
         <SubjectsAssistantWorkspace subjects={subjects} sources={sources} />
       ) : null}
+      {subjects.length > 0 ? (
+        <SubjectResearchToolkit subjects={subjects} sources={sources} />
+      ) : null}
       <SubjectAnalyticsSection analytics={analytics} />
       {subjects.length === 0 ? (
         <EmptyState
           title="No subjects created yet"
-          description="Set up your first subject to organize references by class, topic, or project."
+          description="Set up your first subject to organize references by class, topic, project, or literature review theme."
           action={<SubjectFormDialog />}
         />
       ) : (

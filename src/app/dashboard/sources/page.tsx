@@ -35,7 +35,7 @@ export default async function SourcesPage({ searchParams }: SourcesPageProps) {
       <PageHeader
         eyebrow="Library"
         title="Sources"
-        description="Save, search, filter, and edit your references in one organized workspace with subjects, tags, and citation preferences."
+        description="Save, search, compare, and edit your references in one organized workspace with subjects, tags, citation preferences, and literature discovery."
         actions={
           <>
             <SourceImportDialog existingSources={allSources} />
@@ -160,7 +160,7 @@ export default async function SourcesPage({ searchParams }: SourcesPageProps) {
       {sources.length === 0 ? (
         <EmptyState
           title="No sources found"
-          description="Create your first source or adjust the current filters to expand the list."
+          description="Create your first source, use the discovery panel, or adjust the current filters to expand the list."
           action={
             <div className="flex flex-wrap gap-3">
               <SourceImportDialog existingSources={allSources} />
