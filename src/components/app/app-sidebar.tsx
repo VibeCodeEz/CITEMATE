@@ -4,7 +4,10 @@ import { NavLink } from "@/components/app/nav-link";
 export function AppSidebar() {
   return (
     <>
-      <nav className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-2 lg:hidden">
+      <nav
+        aria-label="Workspace sections"
+        className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-2 lg:hidden"
+      >
         {dashboardNavItems.map((item) => {
           const Icon = item.icon;
 
@@ -21,7 +24,7 @@ export function AppSidebar() {
           <p className="px-3 pb-3 text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
             Workspace
           </p>
-          <nav className="flex flex-col gap-2">
+          <nav aria-label="Workspace sections" className="flex flex-col gap-2">
             {dashboardNavItems.map((item) => {
               const Icon = item.icon;
 

@@ -341,10 +341,11 @@ export async function getDashboardShellData() {
 }
 
 export async function getNeedsAttentionData() {
-  const { sourceReminders } = await getWorkspaceData();
+  const { sourceReminders, hydratedSources } = await getWorkspaceData();
 
   return {
     reminders: sourceReminders,
+    sources: hydratedSources,
     summary: {
       total: sourceReminders.length,
       withAbstractReminder: sourceReminders.filter(

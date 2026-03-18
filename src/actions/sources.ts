@@ -8,6 +8,7 @@ import {
   type ActionResult,
 } from "@/lib/action-result";
 import { requireUser } from "@/lib/auth";
+import { captureMonitoredError } from "@/lib/monitoring/sentry";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
   parseAuthors,
@@ -187,6 +188,12 @@ export async function deleteSourceAction(id: string): Promise<ActionResult> {
     .maybeSingle();
 
   if (sourceError) {
+    captureMonitoredError(sourceError, {
+      area: "upload",
+      action: "delete_source_lookup_failed",
+      userId: user.id,
+      statusCode: 500,
+    });
     return errorResult(sourceError.message);
   }
 
@@ -201,6 +208,12 @@ export async function deleteSourceAction(id: string): Promise<ActionResult> {
     .eq("user_id", user.id);
 
   if (error) {
+    captureMonitoredError(error, {
+      area: "upload",
+      action: "delete_source_failed",
+      userId: user.id,
+      statusCode: 500,
+    });
     return errorResult(error.message);
   }
 
@@ -298,6 +311,12 @@ export async function attachSourceFileAction(
     .maybeSingle();
 
   if (existingSourceError) {
+    captureMonitoredError(existingSourceError, {
+      area: "upload",
+      action: "attach_source_lookup_failed",
+      userId: user.id,
+      statusCode: 500,
+    });
     return errorResult(existingSourceError.message);
   }
 
@@ -317,6 +336,12 @@ export async function attachSourceFileAction(
     .eq("user_id", user.id);
 
   if (error) {
+    captureMonitoredError(error, {
+      area: "upload",
+      action: "attach_source_metadata_failed",
+      userId: user.id,
+      statusCode: 500,
+    });
     return errorResult(error.message);
   }
 

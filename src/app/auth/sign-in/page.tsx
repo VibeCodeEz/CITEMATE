@@ -22,7 +22,11 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
   }
 
   return (
-    <main className="min-h-screen bg-[linear-gradient(180deg,#fcfaf3_0%,#f3efe4_100%)] px-4 py-8 sm:px-6">
+    <main
+      id="main-content"
+      tabIndex={-1}
+      className="min-h-screen bg-[linear-gradient(180deg,#fcfaf3_0%,#f3efe4_100%)] px-4 py-8 sm:px-6"
+    >
       <div className="mx-auto flex min-h-screen max-w-5xl items-center gap-8 lg:grid lg:grid-cols-[0.95fr_1.05fr] lg:gap-10">
         <div className="hidden space-y-6 lg:block">
           <AppLogo />

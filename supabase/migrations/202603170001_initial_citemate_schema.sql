@@ -223,6 +223,11 @@ on public.profiles for update
 using (auth.uid() = id)
 with check (auth.uid() = id);
 
+drop policy if exists "Profiles are insertable by owner" on public.profiles;
+create policy "Profiles are insertable by owner"
+on public.profiles for insert
+with check (auth.uid() = id);
+
 drop policy if exists "Subjects are owned by user" on public.subjects;
 create policy "Subjects are owned by user"
 on public.subjects for all

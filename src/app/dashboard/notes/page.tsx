@@ -1,5 +1,5 @@
+import { NotesAssistantWorkspace } from "@/components/ai/notes-assistant-workspace";
 import { EmptyState } from "@/components/app/empty-state";
-import { NoteCard } from "@/components/app/note-card";
 import { NoteFormDialog } from "@/components/app/note-form-dialog";
 import { PageHeader } from "@/components/app/page-header";
 import { getNotesData } from "@/lib/data/citemate";
@@ -22,11 +22,7 @@ export default async function NotesPage() {
           action={<NoteFormDialog sources={sources} />}
         />
       ) : (
-        <div className="grid gap-5 xl:grid-cols-2">
-          {notes.map((note) => (
-            <NoteCard key={note.id} note={note} sources={sources} />
-          ))}
-        </div>
+        <NotesAssistantWorkspace notes={notes} sources={sources} />
       )}
     </div>
   );

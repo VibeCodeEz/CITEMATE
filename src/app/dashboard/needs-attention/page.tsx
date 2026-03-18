@@ -1,12 +1,12 @@
+import { RemindersAssistantWorkspace } from "@/components/ai/reminders-assistant-workspace";
 import { EmptyState } from "@/components/app/empty-state";
-import { NeedsAttentionBoard } from "@/components/app/needs-attention-board";
 import { PageHeader } from "@/components/app/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { getNeedsAttentionData } from "@/lib/data/citemate";
 
 export default async function NeedsAttentionPage() {
-  const { reminders, summary } = await getNeedsAttentionData();
+  const { reminders, sources, summary } = await getNeedsAttentionData();
 
   return (
     <div className="space-y-8">
@@ -55,7 +55,7 @@ export default async function NeedsAttentionPage() {
               {reminders.length} reminder{reminders.length === 1 ? "" : "s"}
             </Badge>
           </div>
-          <NeedsAttentionBoard reminders={reminders} />
+          <RemindersAssistantWorkspace reminders={reminders} sources={sources} />
         </section>
       )}
     </div>

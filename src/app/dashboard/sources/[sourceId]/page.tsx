@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { notFound } from "next/navigation";
 
+import { ResearchAssistantPanel } from "@/components/ai/research-assistant-panel";
 import { CitationGeneratorPanel } from "@/components/app/citation-generator-panel";
 import { EmptyState } from "@/components/app/empty-state";
 import { NoteCard } from "@/components/app/note-card";
@@ -19,8 +20,15 @@ import { SourceFormDialog } from "@/components/app/source-form-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  mapReminderToAssistantContext,
+  mapSourceToAssistantContext,
+  mapSubjectToAssistantContext,
+} from "@/lib/ai/context";
+import type { AssistantTaskType } from "@/lib/ai/types";
 import { getStyleLabel } from "@/lib/citations";
 import { getSourceDetailsData } from "@/lib/data/citemate";
+import { buildSourceReminders } from "@/lib/reminders/source-reminders";
 import { getSourceTypeLabel } from "@/lib/validations/source";
 
 type SourceDetailsPageProps = {
@@ -46,6 +54,19 @@ export default async function SourceDetailsPage({
   if (!source) {
     notFound();
   }
+
+  const sourceReminders = buildSourceReminders(source);
+  const sourceContext = mapSourceToAssistantContext(source);
+  const subjectContext = mapSubjectToAssistantContext(source.subjects[0]);
+  const reminderContext = sourceReminders[0]
+    ? mapReminderToAssistantContext(sourceReminders[0])
+    : undefined;
+  const sourceAssistantTasks: AssistantTaskType[] = [
+    "summarize_source",
+    "suggest_missing_metadata",
+    "explain_citation",
+    ...(reminderContext ? (["resolve_reminder"] as AssistantTaskType[]) : []),
+  ];
 
   return (
     <div className="space-y-8">
@@ -247,7 +268,17 @@ export default async function SourceDetailsPage({
             </Card>
           </div>
         </div>
-        <CitationGeneratorPanel source={source} />
+        <div className="space-y-6">
+          <CitationGeneratorPanel source={source} />
+          <ResearchAssistantPanel
+            tasks={sourceAssistantTasks}
+            sourceContext={sourceContext}
+            subjectContext={subjectContext}
+            reminderContext={reminderContext}
+            draftLabel="Source assistant draft"
+            description="Get source-specific help for summaries, missing metadata, subject or tag suggestions, and citation guidance. Suggestions never update saved fields automatically."
+          />
+        </div>
       </section>
     </div>
   );

@@ -217,10 +217,37 @@ begin
 end;
 $$;
 
+create or replace function public.delete_current_user()
+returns void
+language plpgsql
+security definer
+set search_path = public, auth, storage
+as $$
+declare
+  current_user_id uuid;
+begin
+  current_user_id := auth.uid();
+
+  if current_user_id is null then
+    raise exception 'Not authenticated.';
+  end if;
+
+  delete from storage.objects
+  where bucket_id = 'source-files'
+    and (storage.foldername(name))[1] = current_user_id::text;
+
+  delete from auth.users
+  where id = current_user_id;
+end;
+$$;
+
 drop trigger if exists source_subjects_ownership_guard on public.source_subjects;
 create trigger source_subjects_ownership_guard
 before insert or update on public.source_subjects
 for each row execute procedure public.ensure_owned_subject_link();
+
+revoke all on function public.delete_current_user() from public;
+grant execute on function public.delete_current_user() to authenticated;
 
 alter table public.profiles enable row level security;
 alter table public.subjects enable row level security;
@@ -240,6 +267,11 @@ drop policy if exists "Profiles are updateable by owner" on public.profiles;
 create policy "Profiles are updateable by owner"
 on public.profiles for update
 using (auth.uid() = id)
+with check (auth.uid() = id);
+
+drop policy if exists "Profiles are insertable by owner" on public.profiles;
+create policy "Profiles are insertable by owner"
+on public.profiles for insert
 with check (auth.uid() = id);
 
 drop policy if exists "Subjects are owned by user" on public.subjects;

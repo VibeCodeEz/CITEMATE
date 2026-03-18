@@ -135,6 +135,16 @@ export function AuthForm({ mode, nextPath, notice, error }: AuthFormProps) {
             <p className="text-xs text-destructive">
               {form.formState.errors.password?.message}
             </p>
+            {!isSignUp ? (
+              <p className="text-right text-xs">
+                <Link
+                  href="/auth/forgot-password"
+                  className="font-medium text-foreground underline underline-offset-4"
+                >
+                  Forgot password?
+                </Link>
+              </p>
+            ) : null}
           </div>
           <Button type="submit" className="w-full" disabled={pending}>
             {pending

@@ -25,7 +25,7 @@ export function AppNavbar({ fullName, email }: AppNavbarProps) {
         <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
           <Link
             href="/dashboard/sources"
-            className="inline-flex items-center justify-center rounded-full border border-border px-4 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+            className="inline-flex items-center justify-center rounded-full border border-border px-4 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground focus-visible:text-foreground"
           >
             Quick add source
           </Link>

@@ -23,7 +23,10 @@ export type Database = {
         | "other";
     };
     Functions: {
-      [_ in never]: never;
+      delete_current_user: {
+        Args: Record<PropertyKey, never>;
+        Returns: undefined;
+      };
     };
     Tables: {
       checklist_items: {

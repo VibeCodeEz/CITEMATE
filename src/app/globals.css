@@ -63,7 +63,7 @@
   --secondary: oklch(0.953 0.015 92.4);
   --secondary-foreground: oklch(0.27 0.018 205.11);
   --muted: oklch(0.953 0.015 92.4);
-  --muted-foreground: oklch(0.53 0.014 208.44);
+  --muted-foreground: oklch(0.45 0.016 208.44);
   --accent: oklch(0.915 0.04 156.68);
   --accent-signal: oklch(0.65 0.12 158.92);
   --accent-foreground: oklch(0.24 0.03 185.3);
@@ -104,10 +104,44 @@
       "calt" 1;
   }
 
+  :where(a, button, input, textarea, select, summary, iframe):focus-visible {
+    outline: 3px solid color-mix(in srgb, var(--ring) 88%, white);
+    outline-offset: 3px;
+  }
+
+  ::selection {
+    background: color-mix(in srgb, var(--primary) 24%, white);
+    color: var(--foreground);
+  }
+
   h1,
   h2,
   h3,
   h4 {
     font-family: var(--font-serif);
+  }
+}
+
+@layer components {
+  .skip-link {
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    z-index: 100;
+    transform: translateY(-180%);
+    border-radius: 9999px;
+    background: var(--primary);
+    color: var(--primary-foreground);
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    box-shadow: 0 8px 30px rgb(15 23 42 / 0.12);
+    transition:
+      transform 150ms ease,
+      opacity 150ms ease;
+  }
+
+  .skip-link:focus {
+    transform: translateY(0);
   }
 }

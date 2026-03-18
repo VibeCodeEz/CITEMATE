@@ -10,11 +10,19 @@ import {
 } from "@/lib/action-result";
 import { normalizeNextPath } from "@/lib/auth-redirect";
 import { getFriendlyAuthError } from "@/lib/auth-errors";
+import { captureMonitoredError } from "@/lib/monitoring/sentry";
 import { ensureProfileForUser } from "@/lib/auth";
+import { getSiteUrl } from "@/lib/site";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
+  deleteAccountSchema,
+  passwordResetRequestSchema,
+  passwordUpdateSchema,
+  type DeleteAccountFormInput,
   signInSchema,
   signUpSchema,
+  type PasswordResetRequestInput,
+  type PasswordUpdateInput,
   type SignInInput,
   type SignUpInput,
 } from "@/lib/validations/auth";
@@ -43,6 +51,14 @@ export async function signInAction(
   } = await supabase.auth.signInWithPassword(parsed.data);
 
   if (error) {
+    captureMonitoredError(error, {
+      area: "auth",
+      action: "sign_in_failed",
+      statusCode: error.status,
+      extra: {
+        code: error.code ?? null,
+      },
+    });
     return errorResult(getFriendlyAuthError(error));
   }
 
@@ -90,6 +106,14 @@ export async function signUpAction(
   });
 
   if (error) {
+    captureMonitoredError(error, {
+      area: "auth",
+      action: "sign_up_failed",
+      statusCode: error.status,
+      extra: {
+        code: error.code ?? null,
+      },
+    });
     return errorResult(getFriendlyAuthError(error));
   }
 
@@ -113,10 +137,136 @@ export async function signOutAction(): Promise<ActionResult> {
   const { error } = await supabase.auth.signOut();
 
   if (error) {
+    captureMonitoredError(error, {
+      area: "auth",
+      action: "sign_out_failed",
+      statusCode: error.status,
+      extra: {
+        code: error.code ?? null,
+      },
+    });
     return errorResult(getFriendlyAuthError(error));
   }
 
   revalidatePath("/", "layout");
 
   return successResult("Signed out successfully.");
+}
+
+export async function requestPasswordResetAction(
+  values: PasswordResetRequestInput,
+): Promise<ActionResult> {
+  const parsed = passwordResetRequestSchema.safeParse(values);
+
+  if (!parsed.success) {
+    return errorResult(
+      "Please correct the highlighted fields.",
+      parsed.error.flatten().fieldErrors,
+    );
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const requestHeaders = await headers();
+  const origin = requestHeaders.get("origin") ?? getSiteUrl();
+  const redirectTo = `${origin}/auth/callback?next=${encodeURIComponent("/auth/reset-password")}`;
+
+  const { error } = await supabase.auth.resetPasswordForEmail(parsed.data.email, {
+    redirectTo,
+  });
+
+  if (error) {
+    captureMonitoredError(error, {
+      area: "auth",
+      action: "password_reset_request_failed",
+      statusCode: error.status,
+      extra: {
+        code: error.code ?? null,
+      },
+    });
+    return errorResult(getFriendlyAuthError(error));
+  }
+
+  return successResult(
+    "If that email exists, a password reset link has been sent.",
+  );
+}
+
+export async function updatePasswordAction(
+  values: PasswordUpdateInput,
+): Promise<ActionResult<AuthSuccessData>> {
+  const parsed = passwordUpdateSchema.safeParse(values);
+
+  if (!parsed.success) {
+    return errorResult(
+      "Please correct the highlighted fields.",
+      parsed.error.flatten().fieldErrors,
+    );
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.auth.updateUser({
+    password: parsed.data.password,
+  });
+
+  if (error) {
+    captureMonitoredError(error, {
+      area: "auth",
+      action: "password_update_failed",
+      statusCode: error.status,
+      extra: {
+        code: error.code ?? null,
+      },
+    });
+    return errorResult(getFriendlyAuthError(error));
+  }
+
+  await supabase.auth.signOut();
+  revalidatePath("/", "layout");
+
+  return successResult("Password updated. Sign in with your new password.", {
+    redirectTo: "/auth/sign-in?notice=Password%20updated.%20Sign%20in%20with%20your%20new%20password.",
+  });
+}
+
+export async function deleteAccountAction(
+  values: DeleteAccountFormInput,
+): Promise<ActionResult<AuthSuccessData>> {
+  const parsed = deleteAccountSchema.safeParse(values);
+
+  if (!parsed.success) {
+    return errorResult(
+      "Please confirm the deletion phrase before continuing.",
+      parsed.error.flatten().fieldErrors,
+    );
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return errorResult("Your session has expired. Sign in again and retry.");
+  }
+
+  const { error } = await supabase.rpc("delete_current_user");
+
+  if (error) {
+    captureMonitoredError(error, {
+      area: "auth",
+      action: "delete_account_failed",
+      userId: user.id,
+      statusCode: 500,
+    });
+    return errorResult(
+      "We could not delete the account right now. Apply the latest Supabase migration and try again.",
+    );
+  }
+
+  await supabase.auth.signOut();
+  revalidatePath("/", "layout");
+
+  return successResult("Your account and workspace data were deleted.", {
+    redirectTo: "/",
+  });
 }

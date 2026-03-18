@@ -21,7 +21,9 @@ export function DashboardShell({
         <AppNavbar fullName={fullName} email={email} />
         <div className="flex flex-1 flex-col gap-6 py-6 lg:grid lg:grid-cols-[260px_minmax(0,1fr)]">
           <AppSidebar />
-          <main className="min-w-0">{children}</main>
+          <main id="main-content" tabIndex={-1} className="min-w-0">
+            {children}
+          </main>
         </div>
         <AppFooter />
       </div>

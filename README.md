@@ -26,6 +26,7 @@ CiteMate is a student-focused citation and research workspace built with Next.js
 - Subject analytics for tags, source distribution, source types, and note coverage
 - Needs Attention reminders for incomplete citation details and missing abstracts
 - Academic writing checklist with saved progress
+- Contextual Research Assistant with Groq-powered suggestions for sources, notes, and reminders
 - Dashboard with research stats, reminders, and quick actions
 
 ## Project Structure
@@ -68,11 +69,18 @@ Copy `.env.example` to `.env.local` and set:
 | --- | --- | --- |
 | `NEXT_PUBLIC_SUPABASE_URL` | Yes | Supabase project URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes | Supabase anon public key |
+| `NEXT_PUBLIC_SITE_URL` | No | Canonical site URL used for metadata and sitemap generation |
+| `NEXT_PUBLIC_SUPPORT_EMAIL` | No | Public support email shown on the contact page |
+| `NEXT_PUBLIC_SENTRY_DSN` | No | Browser/server error monitoring DSN for Sentry |
+| `GROQ_API_KEY` | Yes | Server-only Groq API key for the Research Assistant |
+| `GROQ_MODEL` | No | Optional Groq model override |
 
 Important:
 
 - Do not add the Supabase service role key to this app.
 - Only the anon public key is needed in the Next.js runtime.
+- `GROQ_API_KEY` must never be exposed to the client.
+- If you enable Sentry, review its privacy settings before sending production traffic.
 - `.env*` files are ignored by git in this repo.
 
 ## Local Setup
@@ -94,10 +102,7 @@ cp .env.example .env.local
 4. Apply the database setup.
 
 - For a fresh project, run `supabase/schema.sql`.
-- For migration-based setup, apply:
-  - `supabase/migrations/202603170001_initial_citemate_schema.sql`
-  - `supabase/migrations/202603170002_source_attachment_metadata.sql`
-  - `supabase/migrations/202603170003_source_reminder_dismissals.sql`
+- For migration-based setup, apply `supabase/migrations/202603170001_initial_citemate_schema.sql`.
 
 5. Optional for local sample data: run `supabase/seed.sql`.
 

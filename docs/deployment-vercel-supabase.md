@@ -24,6 +24,10 @@ Add these variables to Production, Preview, and Development as needed:
 
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `NEXT_PUBLIC_SITE_URL`
+- `NEXT_PUBLIC_SUPPORT_EMAIL`
+- `NEXT_PUBLIC_SENTRY_DSN` if monitoring is enabled
+- `SENTRY_ORG`, `SENTRY_PROJECT`, and `SENTRY_AUTH_TOKEN` if uploading source maps to Sentry
 
 Important:
 

@@ -26,8 +26,9 @@ export function NavLink({
   return (
     <Link
       href={href}
+      aria-current={active ? "page" : undefined}
       className={cn(
-        "inline-flex shrink-0 items-center gap-2 rounded-full px-4 py-2.5 text-sm font-medium transition-colors",
+        "inline-flex shrink-0 items-center gap-2 rounded-full px-4 py-2.5 text-sm font-medium transition-colors focus-visible:text-foreground",
         active
           ? "bg-primary text-primary-foreground shadow-sm"
           : "text-muted-foreground hover:bg-secondary hover:text-foreground",

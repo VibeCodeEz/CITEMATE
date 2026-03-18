@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 
+import { captureMonitoredError } from "@/lib/monitoring/sentry";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 type RouteContext = {
@@ -27,6 +28,15 @@ export async function GET(_request: NextRequest, context: RouteContext) {
     .maybeSingle();
 
   if (error || !source?.file_path) {
+    if (error) {
+      captureMonitoredError(error, {
+        area: "upload",
+        action: "attachment_lookup_failed",
+        userId: user.id,
+        route: `/api/source-files/${sourceId}`,
+        statusCode: 404,
+      });
+    }
     return NextResponse.json({ error: "Attachment not found." }, { status: 404 });
   }
 
@@ -35,6 +45,13 @@ export async function GET(_request: NextRequest, context: RouteContext) {
     .createSignedUrl(source.file_path, 60);
 
   if (signedUrlError || !signedUrl?.signedUrl) {
+    captureMonitoredError(signedUrlError ?? new Error("Missing signed URL"), {
+      area: "upload",
+      action: "signed_url_failed",
+      userId: user.id,
+      route: `/api/source-files/${sourceId}`,
+      statusCode: 500,
+    });
     return NextResponse.json(
       { error: signedUrlError?.message ?? "Unable to create signed URL." },
       { status: 500 },

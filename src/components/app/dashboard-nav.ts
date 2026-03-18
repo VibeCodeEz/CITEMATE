@@ -5,6 +5,7 @@ import {
   LayoutDashboard,
   NotebookPen,
   ScanSearch,
+  Settings,
 } from "lucide-react";
 
 type DashboardNavItem = {
@@ -21,4 +22,5 @@ export const dashboardNavItems: DashboardNavItem[] = [
   { href: "/dashboard/subjects", label: "Subjects", icon: FolderKanban },
   { href: "/dashboard/notes", label: "Notes", icon: NotebookPen },
   { href: "/dashboard/checklist", label: "Checklist", icon: ScanSearch },
+  { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ];

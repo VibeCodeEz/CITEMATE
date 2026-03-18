@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 
 import { AppLogo } from "@/components/app/app-logo";
+import { AppFooter } from "@/components/app/app-footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { getCurrentUser } from "@/lib/auth";
@@ -43,7 +44,11 @@ export default async function HomePage() {
   const user = await getCurrentUser();
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(15,118,110,0.16),_transparent_36%),linear-gradient(180deg,#fcfaf3_0%,#f3efe4_100%)] text-foreground">
+    <main
+      id="main-content"
+      tabIndex={-1}
+      className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(15,118,110,0.16),_transparent_36%),linear-gradient(180deg,#fcfaf3_0%,#f3efe4_100%)] text-foreground"
+    >
       <div className="mx-auto flex min-h-screen max-w-7xl flex-col px-4 py-6 sm:px-6 lg:px-8">
         <header className="flex flex-col gap-4 rounded-[2rem] border border-border/70 bg-background/85 px-4 py-4 shadow-lg shadow-teal-950/5 backdrop-blur sm:flex-row sm:items-center sm:justify-between sm:px-5">
           <AppLogo />
@@ -137,6 +142,7 @@ export default async function HomePage() {
             </CardContent>
           </Card>
         </section>
+        <AppFooter />
       </div>
     </main>
   );
