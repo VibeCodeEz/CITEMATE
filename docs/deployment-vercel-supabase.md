@@ -1,4 +1,4 @@
-# Deploying CiteMate to Vercel + Supabase
+# Deploying CiteMate to Vercel, Netlify, or Another Host
 
 ## 1. Prepare Supabase
 
@@ -12,13 +12,13 @@
      - `https://your-app.vercel.app/auth/callback`
      - `https://your-preview-domain.vercel.app/auth/callback` if needed
 
-## 2. Create the Vercel Project
+## 2. Create the Hosting Project
 
 1. Push the repo to GitHub, GitLab, or Bitbucket.
-2. Import the repo into Vercel.
+2. Import the repo into your hosting provider.
 3. Keep the framework preset as Next.js.
 
-## 3. Add Environment Variables in Vercel
+## 3. Add Environment Variables in Your Host
 
 Add these variables to Production, Preview, and Development as needed:
 
@@ -27,12 +27,16 @@ Add these variables to Production, Preview, and Development as needed:
 - `NEXT_PUBLIC_SITE_URL`
 - `NEXT_PUBLIC_SUPPORT_EMAIL`
 - `NEXT_PUBLIC_SENTRY_DSN` if monitoring is enabled
+- `GROQ_API_KEY` for the Research Assistant
+- `GROQ_MODEL` if you want to override the default model
 - `SENTRY_ORG`, `SENTRY_PROJECT`, and `SENTRY_AUTH_TOKEN` if uploading source maps to Sentry
 
 Important:
 
-- Do not expose the Supabase service role key in Vercel for this app.
+- Do not expose the Supabase service role key in the host for this app.
 - This project is designed to work with the public anon key plus RLS.
+- Local `.env` or `.env.local` files do not get deployed automatically. Re-enter the values in the hosting dashboard.
+- If you add or change a server-only variable such as `GROQ_API_KEY`, trigger a fresh deploy so the serverless functions rebuild with the new environment.
 
 ## 4. Deploy
 
@@ -55,3 +59,4 @@ Important:
 - Verify RLS is enabled on user-owned tables
 - Confirm build logs are clean
 - Confirm browser console does not show missing env var errors
+- Call the Research Assistant once and confirm `/api/ai/assistant` does not return a 503 or 500

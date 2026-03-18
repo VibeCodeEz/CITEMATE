@@ -79,6 +79,27 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error(error);
+
+    if (
+      error instanceof Error &&
+      error.message.includes("Missing Groq environment variables")
+    ) {
+      captureMonitoredError(error, {
+        area: "ai",
+        action: "assistant_env_missing",
+        route: "/api/ai/assistant",
+        statusCode: 503,
+      });
+
+      return NextResponse.json(
+        {
+          error:
+            "The Research Assistant is not configured on this deployment yet. Add GROQ_API_KEY in your host environment variables and redeploy.",
+        },
+        { status: 503 },
+      );
+    }
+
     captureMonitoredError(error, {
       area: "ai",
       action: "assistant_request_failed",

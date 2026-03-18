@@ -63,7 +63,7 @@ docs/
 
 ## Environment Variables
 
-Copy `.env.example` to `.env.local` and set:
+Copy `.env.example` to `.env.local` for local development and set:
 
 | Variable | Required | Description |
 | --- | --- | --- |
@@ -82,6 +82,7 @@ Important:
 - `GROQ_API_KEY` must never be exposed to the client.
 - If you enable Sentry, review its privacy settings before sending production traffic.
 - `.env*` files are ignored by git in this repo.
+- On Netlify, Vercel, or any other host, add these variables in the provider dashboard. Your local `.env` or `.env.local` file is not uploaded automatically.
 
 ## Local Setup
 
