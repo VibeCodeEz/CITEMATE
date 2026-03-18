@@ -42,9 +42,9 @@ const quickActions = [
     icon: NotebookPen,
   },
   {
-    title: "Review originality",
+    title: "Final review",
     description:
-      "Run the final writing checklist before submission.",
+      "Run the RRL and submission checklist before turning in your paper.",
     href: "/dashboard/checklist",
     icon: ScanSearch,
   },
@@ -91,7 +91,7 @@ export default async function DashboardPage() {
                     Keep your paper organized from first source to final submission
                   </h2>
                   <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
-                    CiteMate helps you collect evidence, draft notes, and run a final originality check without bouncing across separate tools.
+                    CiteMate helps you collect evidence, draft notes, build literature review structure, and run a final submission check without bouncing across separate tools.
                   </p>
                 </div>
               </div>

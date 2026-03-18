@@ -381,6 +381,7 @@ export async function getSubjectsData() {
 
   return {
     subjects: subjectsWithCount,
+    sources: hydratedSources,
     analytics: calculateWorkspaceAnalytics({
       sources: hydratedSources,
       subjects: subjectsWithCount,

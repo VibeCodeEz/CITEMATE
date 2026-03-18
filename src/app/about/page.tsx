@@ -36,6 +36,12 @@ const pillars = [
     icon: NotebookTabs,
   },
   {
+    title: "Build literature reviews",
+    description:
+      "Use subject-level AI help to discover literature, cluster studies by theme, draft RRL outlines, compare related studies, and surface possible research gaps.",
+    icon: ShieldCheck,
+  },
+  {
     title: "Review before submission",
     description:
       "Use reminders and the built-in checklist to catch incomplete details before turning in a paper or draft.",
@@ -65,9 +71,10 @@ export default function AboutPage() {
             </h1>
             <p className="mt-5 max-w-3xl text-base leading-7 text-muted-foreground sm:text-lg">
               The app brings source tracking, note taking, citation generation,
-              checklist review, and research reminders into one calm workflow.
-              It is designed for students who want structure without adding more
-              friction to the writing process.
+              checklist review, research reminders, and literature review
+              support into one calm workflow. It is designed for students who
+              want structure without adding more friction to the writing
+              process.
             </p>
             <div className="mt-8 grid gap-4 md:grid-cols-2">
               {pillars.map((pillar) => {
@@ -96,8 +103,9 @@ export default function AboutPage() {
                 <h2 className="text-xl font-semibold">Who it is for</h2>
                 <p className="mt-2 leading-7 text-white/80">
                   CiteMate is aimed at college students and academic writers who
-                  need a simpler way to manage sources, notes, and citation
-                  details while working across multiple assignments or topics.
+                  need a simpler way to manage sources, notes, citation
+                  details, and RRL writing while working across multiple
+                  assignments or topics.
                 </p>
               </section>
               <section>
@@ -105,7 +113,8 @@ export default function AboutPage() {
                 <p className="mt-2 leading-7 text-white/80">
                   Instead of treating citations, notes, and reminders as
                   separate tasks, CiteMate keeps them connected so your workflow
-                  stays easier to review and less stressful near submission.
+                  stays easier to review, synthesize, and manage near
+                  submission.
                 </p>
               </section>
             </div>

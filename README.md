@@ -1,6 +1,6 @@
 # CiteMate
 
-CiteMate is a student-focused citation and research workspace built with Next.js and Supabase. It helps students collect sources, organize them by subject, auto-fill metadata from DOIs and URLs, write structured notes, preview attachments, export citations, and track incomplete research details before submission.
+CiteMate is a student-focused citation and research workspace built with Next.js and Supabase. It helps students collect sources, organize them by subject, auto-fill metadata from DOIs and URLs, write structured notes, preview attachments, export citations, track incomplete research details before submission, and now build literature review workflows for RRL or RLL writing.
 
 ## Stack
 
@@ -17,16 +17,18 @@ CiteMate is a student-focused citation and research workspace built with Next.js
 
 - Email/password authentication with protected dashboard routes
 - Source library with search, filtering, tags, subjects, and attachments
+- Source discovery panel for finding literature through Google Scholar, DOAJ, PubMed, PubMed Central, OpenAlex, and Crossref
 - DOI and URL metadata fetch with safe merge behavior before save
 - Citation generator for APA 7, MLA 9, and Chicago
 - BibTeX and RIS export for single sources or selected source sets
 - CSV import with field mapping, preview, validation, and partial success import
 - Source-linked note taking with markdown editing and sanitized preview/rendering
+- RRL-focused assistant actions for literature discovery, RRL note building, theme grouping, related studies matrices, outline generation, and research gap finding
 - PDF attachment preview with secure signed file access
 - Subject analytics for tags, source distribution, source types, and note coverage
 - Needs Attention reminders for incomplete citation details and missing abstracts
 - Academic writing checklist with saved progress
-- Contextual Research Assistant with Groq-powered suggestions for sources, notes, and reminders
+- Contextual Research Assistant with Groq-powered suggestions for sources, notes, reminders, and subject-level literature review collections
 - Dashboard with research stats, reminders, and quick actions
 
 ## Project Structure
@@ -154,6 +156,7 @@ npm run build
 - Empty states are included for sources, notes, subjects, analytics, reminders, and checklist views.
 - Forms use Zod validation and friendly error messaging.
 - DOI and URL metadata fetch never silently overwrites manually edited fields.
+- AI context controls can now include a compact collection of related sources and notes for subject-level RRL synthesis tasks.
 - Layouts are responsive across desktop and mobile widths.
 
 ## Additional Docs

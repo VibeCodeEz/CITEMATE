@@ -3,6 +3,7 @@ import { Search } from "lucide-react";
 
 import { EmptyState } from "@/components/app/empty-state";
 import { PageHeader } from "@/components/app/page-header";
+import { SourceDiscoveryPanel } from "@/components/app/source-discovery-panel";
 import { SourceFormDialog } from "@/components/app/source-form-dialog";
 import { SourceImportDialog } from "@/components/app/source-import-dialog";
 import { SourcesCollection } from "@/components/app/sources-collection";
@@ -68,6 +69,7 @@ export default async function SourcesPage({ searchParams }: SourcesPageProps) {
           </CardContent>
         </Card>
       </section>
+      <SourceDiscoveryPanel />
       <Card className="border-border/70 bg-card/90">
         <CardContent className="space-y-4 py-5">
           <form className="grid gap-3 md:grid-cols-2 xl:grid-cols-6">

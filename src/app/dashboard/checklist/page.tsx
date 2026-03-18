@@ -9,8 +9,8 @@ export default async function ChecklistPage() {
     <div className="space-y-8">
       <PageHeader
         eyebrow="Final review"
-        title="Plagiarism checklist"
-        description="Use this student-friendly final pass to confirm quotations, paraphrases, citations, references, and originality before you submit."
+        title="RRL and Submission Checklist"
+        description="Use this final pass to confirm literature coverage, synthesis quality, citations, references, and originality before you submit."
       />
       <ChecklistBoard items={items} />
     </div>

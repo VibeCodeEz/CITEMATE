@@ -5,7 +5,13 @@ export type AssistantTaskType =
   | "notes_to_outline"
   | "rewrite_notes"
   | "generate_study_questions"
-  | "resolve_reminder";
+  | "resolve_reminder"
+  | "discover_literature"
+  | "build_rrl_note"
+  | "group_sources_by_theme"
+  | "build_related_studies_matrix"
+  | "generate_rrl_outline"
+  | "find_research_gaps";
 
 export type AssistantSourceContext = {
   id: string;
@@ -32,6 +38,30 @@ export type AssistantSubjectContext = {
   id?: string;
   name: string;
   description?: string | null;
+};
+
+export type AssistantCollectionSourceContext = {
+  title: string;
+  authors: string[];
+  year: number | null;
+  abstract: string | null;
+  sourceType: string;
+  tags: string[];
+};
+
+export type AssistantCollectionNoteContext = {
+  title: string;
+  excerpt: string;
+  sourceTitle?: string | null;
+};
+
+export type AssistantCollectionContext = {
+  label: string;
+  description?: string | null;
+  sourceCount: number;
+  noteCount: number;
+  sources: AssistantCollectionSourceContext[];
+  notes: AssistantCollectionNoteContext[];
 };
 
 export type AssistantReminderContext = {
@@ -73,6 +103,7 @@ export type AssistantRequest = {
   sourceContext?: AssistantSourceContext;
   noteContext?: AssistantNoteContext;
   subjectContext?: AssistantSubjectContext;
+  collectionContext?: AssistantCollectionContext;
   reminderContext?: AssistantReminderContext;
   userMessage?: string;
 };

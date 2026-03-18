@@ -7,6 +7,7 @@ import { NoteCard } from "@/components/app/note-card";
 import { Button } from "@/components/ui/button";
 import type { AssistantTaskType } from "@/lib/ai/types";
 import {
+  mapCollectionToAssistantContext,
   mapNoteToAssistantContext,
   mapSourceToAssistantContext,
   mapSubjectToAssistantContext,
@@ -29,8 +30,13 @@ type NotesAssistantWorkspaceProps = {
 };
 
 const noteTasks: AssistantTaskType[] = [
+  "build_rrl_note",
   "notes_to_outline",
   "rewrite_notes",
+  "group_sources_by_theme",
+  "build_related_studies_matrix",
+  "generate_rrl_outline",
+  "find_research_gaps",
   "generate_study_questions",
 ];
 
@@ -56,6 +62,23 @@ export function NotesAssistantWorkspace({
     () => mapSubjectToAssistantContext(selectedSubject),
     [selectedSubject],
   );
+  const collectionContext = useMemo(() => {
+    if (!selectedSubject) {
+      return undefined;
+    }
+
+    const relatedSources = sources.filter((source) =>
+      source.subjects.some((subject) => subject.id === selectedSubject.id),
+    );
+
+    return mapCollectionToAssistantContext({
+      label: `${selectedSubject.name} literature set`,
+      description:
+        selectedSubject.description ??
+        "Sources and notes linked to the current subject.",
+      sources: relatedSources,
+    });
+  }, [selectedSubject, sources]);
 
   return (
     <div className="space-y-8">
@@ -85,8 +108,9 @@ export function NotesAssistantWorkspace({
               noteContext={noteContext}
               sourceContext={sourceContext}
               subjectContext={subjectContext}
+              collectionContext={collectionContext}
               draftLabel="Note draft"
-              description="Use the current note to build outlines, cleaner study notes, or review questions. Suggestions stay separate until you choose to use them."
+              description="Use the current note and related subject materials to build RRL notes, outlines, theme groupings, studies matrices, gap analysis, or cleaner study notes. Suggestions stay separate until you choose to use them."
             />
           </div>
           <div className="grid gap-5 xl:grid-cols-1">

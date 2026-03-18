@@ -2,6 +2,7 @@ import Link from "next/link";
 import {
   ArrowRight,
   BookText,
+  BrainCircuit,
   FolderOpenDot,
   NotebookTabs,
   ShieldCheck,
@@ -33,9 +34,15 @@ const highlights = [
     icon: NotebookTabs,
   },
   {
+    title: "Build RRL drafts faster",
+    description:
+      "Use AI to discover literature, build RRL notes, group studies by theme, draft outlines, and surface possible research gaps.",
+    icon: BrainCircuit,
+  },
+  {
     title: "Review with confidence",
     description:
-      "Use the built-in plagiarism checklist before turning in a paper or submitting a draft.",
+      "Use the built-in final review workflow to catch missing details before turning in a paper or submitting a draft.",
     icon: ShieldCheck,
   },
 ];
@@ -67,16 +74,17 @@ export default async function HomePage() {
           <div className="space-y-8">
             <div className="space-y-5">
               <p className="text-sm font-semibold uppercase tracking-[0.3em] text-muted-foreground">
-                Citation workflow for real student research
+                Research and literature review workflow for real student writing
               </p>
               <h1 className="max-w-4xl text-balance font-serif text-4xl leading-[0.95] tracking-tight sm:text-5xl lg:text-6xl">
-                Keep every source, note, and citation in a workspace that feels calm under pressure.
+                Keep every source, note, citation, and RRL draft in one workspace that feels calm under pressure.
               </h1>
               <p className="max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg sm:leading-8">
-                CiteMate helps you save academic sources, generate APA, MLA,
-                Chicago, Harvard, IEEE, AMA, Vancouver, Turabian, ACS, CSE,
-                OSCOLA, Bluebook, ASA, APSA, and NLM citations, track notes,
-                and run a final plagiarism-ready review before submission.
+                CiteMate helps you save academic sources, discover literature,
+                generate APA, MLA, Chicago, Harvard, IEEE, AMA, Vancouver,
+                Turabian, ACS, CSE, OSCOLA, Bluebook, ASA, APSA, and NLM
+                citations, track linked notes, and turn subject collections into
+                RRL notes, studies matrices, outlines, and research gap drafts.
               </p>
             </div>
             <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
@@ -106,15 +114,15 @@ export default async function HomePage() {
                   </div>
                   <div className="rounded-2xl bg-white/10 p-4">
                     <p className="text-xs uppercase tracking-[0.2em] text-white/70">
-                      Writing
+                      Synthesis
                     </p>
-                    <p className="mt-2 font-serif text-2xl">Linked notes</p>
+                    <p className="mt-2 font-serif text-2xl">RRL assistant</p>
                   </div>
                   <div className="rounded-2xl bg-white/10 p-4">
                     <p className="text-xs uppercase tracking-[0.2em] text-white/70">
                       Final pass
                     </p>
-                    <p className="mt-2 font-serif text-2xl">Checklist ready</p>
+                    <p className="mt-2 font-serif text-2xl">Submission ready</p>
                   </div>
                 </div>
               </div>

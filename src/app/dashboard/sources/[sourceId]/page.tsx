@@ -63,7 +63,9 @@ export default async function SourceDetailsPage({
     ? mapReminderToAssistantContext(sourceReminders[0])
     : undefined;
   const sourceAssistantTasks: AssistantTaskType[] = [
+    "discover_literature",
     "summarize_source",
+    "build_rrl_note",
     "suggest_missing_metadata",
     "explain_citation",
     ...(reminderContext ? (["resolve_reminder"] as AssistantTaskType[]) : []),
@@ -74,7 +76,7 @@ export default async function SourceDetailsPage({
       <PageHeader
         eyebrow="Library"
         title={source.title}
-        description="Review source metadata, inspect linked notes, and generate polished citations without leaving the dashboard."
+        description="Review source metadata, inspect linked notes, build RRL-ready drafts, and generate polished citations without leaving the dashboard."
         actions={
           <>
             <Button variant="outline" asChild>
@@ -283,7 +285,7 @@ export default async function SourceDetailsPage({
             subjectContext={subjectContext}
             reminderContext={reminderContext}
             draftLabel="Source assistant draft"
-            description="Get source-specific help for summaries, missing metadata, subject or tag suggestions, and citation guidance. Suggestions never update saved fields automatically."
+            description="Get source-specific help for literature discovery, RRL note building, summaries, missing metadata, subject or tag suggestions, and citation guidance. Suggestions never update saved fields automatically."
           />
         </div>
       </section>

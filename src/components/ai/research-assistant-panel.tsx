@@ -13,6 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import type {
+  AssistantCollectionContext,
   AssistantNoteContext,
   AssistantReminderContext,
   AssistantResponse,
@@ -28,6 +29,7 @@ type ResearchAssistantPanelProps = {
   sourceContext?: AssistantSourceContext;
   noteContext?: AssistantNoteContext;
   subjectContext?: AssistantSubjectContext;
+  collectionContext?: AssistantCollectionContext;
   reminderContext?: AssistantReminderContext;
   draftLabel?: string;
 };
@@ -39,6 +41,7 @@ export function ResearchAssistantPanel({
   sourceContext,
   noteContext,
   subjectContext,
+  collectionContext,
   reminderContext,
   draftLabel = "Working draft",
 }: ResearchAssistantPanelProps) {
@@ -51,6 +54,7 @@ export function ResearchAssistantPanel({
   const [includeSourceContext, setIncludeSourceContext] = useState(Boolean(sourceContext));
   const [includeNoteContext, setIncludeNoteContext] = useState(Boolean(noteContext));
   const [includeSubjectContext, setIncludeSubjectContext] = useState(Boolean(subjectContext));
+  const [includeCollectionContext, setIncludeCollectionContext] = useState(Boolean(collectionContext));
   const [includeReminderContext, setIncludeReminderContext] = useState(Boolean(reminderContext));
   const [includeUserMessage, setIncludeUserMessage] = useState(true);
 
@@ -59,15 +63,21 @@ export function ResearchAssistantPanel({
       Boolean(
         (includeSourceContext && sourceContext) ||
           (includeNoteContext && noteContext) ||
+          (includeSubjectContext && subjectContext) ||
+          (includeCollectionContext && collectionContext) ||
           (includeReminderContext && reminderContext),
       ),
     [
+      collectionContext,
+      includeCollectionContext,
       includeNoteContext,
       includeReminderContext,
       includeSourceContext,
+      includeSubjectContext,
       noteContext,
       reminderContext,
       sourceContext,
+      subjectContext,
     ],
   );
 
@@ -105,6 +115,20 @@ export function ResearchAssistantPanel({
       });
     }
 
+    if (includeCollectionContext && collectionContext) {
+      items.push({
+        label: "Collection",
+        value: [
+          collectionContext.label,
+          collectionContext.description ?? "",
+          `${collectionContext.sourceCount} sources`,
+          `${collectionContext.noteCount} notes`,
+        ]
+          .filter(Boolean)
+          .join(" | "),
+      });
+    }
+
     if (includeReminderContext && reminderContext) {
       items.push({
         label: "Reminder",
@@ -127,6 +151,8 @@ export function ResearchAssistantPanel({
 
     return items;
   }, [
+    collectionContext,
+    includeCollectionContext,
     includeNoteContext,
     includeReminderContext,
     includeSourceContext,
@@ -141,7 +167,7 @@ export function ResearchAssistantPanel({
 
   async function runTask(taskType: AssistantTaskType) {
     if (!hasContext) {
-      toast.error("Add a source, note, or reminder context first.");
+      toast.error("Add a source, note, subject, or collection context first.");
       return;
     }
 
@@ -159,6 +185,7 @@ export function ResearchAssistantPanel({
           sourceContext: includeSourceContext ? sourceContext : undefined,
           noteContext: includeNoteContext ? noteContext : undefined,
           subjectContext: includeSubjectContext ? subjectContext : undefined,
+          collectionContext: includeCollectionContext ? collectionContext : undefined,
           reminderContext: includeReminderContext ? reminderContext : undefined,
           userMessage:
             includeUserMessage && userMessage.trim()
@@ -204,6 +231,8 @@ export function ResearchAssistantPanel({
           <AssistantContextSummary
             sourceContext={includeSourceContext ? sourceContext : undefined}
             noteContext={includeNoteContext ? noteContext : undefined}
+            subjectContext={includeSubjectContext ? subjectContext : undefined}
+            collectionContext={includeCollectionContext ? collectionContext : undefined}
             reminderContext={includeReminderContext ? reminderContext : undefined}
           />
           <div className="rounded-[1.5rem] border border-border/80 bg-secondary/15 p-4">
@@ -271,6 +300,21 @@ export function ResearchAssistantPanel({
                     <span className="block font-medium">Include subject context</span>
                     <span className="block text-xs leading-5 text-muted-foreground">
                       Subject name and optional description.
+                    </span>
+                  </span>
+                </label>
+              ) : null}
+              {collectionContext ? (
+                <label className="flex items-start gap-3 rounded-2xl border border-border/70 bg-background/70 p-3">
+                  <Checkbox
+                    checked={includeCollectionContext}
+                    onCheckedChange={(value) => setIncludeCollectionContext(Boolean(value))}
+                    aria-label="Include collection context in AI request"
+                  />
+                  <span className="space-y-1">
+                    <span className="block font-medium">Include source collection</span>
+                    <span className="block text-xs leading-5 text-muted-foreground">
+                      A compact set of related sources and notes for synthesis, comparison, and gap analysis.
                     </span>
                   </span>
                 </label>

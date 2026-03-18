@@ -60,8 +60,8 @@ export function ChecklistBoard({ items }: ChecklistBoardProps) {
             No checklist items are loaded yet
           </h2>
           <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
-            Run the latest Supabase schema or seed script so the academic writing
-            checklist items are inserted into your database.
+            Run the latest Supabase schema, migration, or seed script so the
+            writing review checklist items are inserted into your database.
           </p>
         </CardContent>
       </Card>
@@ -87,7 +87,7 @@ export function ChecklistBoard({ items }: ChecklistBoardProps) {
               </div>
             </div>
             <p className="text-sm leading-6 text-muted-foreground">
-              Treat this as your last pass before submission: citations, quotations, paraphrases, and originality checks in one place.
+              Treat this as your last pass before submission: literature coverage, synthesis, citations, and originality checks in one place.
             </p>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -139,7 +139,7 @@ export function ChecklistBoard({ items }: ChecklistBoardProps) {
             </div>
             <div className="space-y-1">
               <CardTitle className="font-serif text-3xl tracking-tight">
-                Academic writing checklist
+                RRL and writing checklist
               </CardTitle>
               <p className="text-sm leading-6 text-muted-foreground">
                 Check items as you verify them. Progress is saved to your account immediately.

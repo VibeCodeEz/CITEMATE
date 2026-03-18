@@ -377,13 +377,13 @@ with check (auth.uid() = user_id);
 
 insert into public.checklist_items (slug, label, description, position)
 values
-  ('quoted-text-quotation-marks', 'All quoted text has quotation marks', 'Check every direct quotation for quotation marks and exact wording copied from the original source.', 1),
-  ('paraphrased-ideas-cited', 'All paraphrased ideas have citations', 'Make sure each paraphrased idea is followed by a proper citation to the original source.', 2),
-  ('bibliography-included', 'Bibliography or reference list included', 'Confirm the final paper includes a complete references, works cited, or bibliography section.', 3),
-  ('in-text-citations-checked', 'In-text citations checked', 'Review author names, years, page numbers, and punctuation in each in-text citation.', 4),
-  ('source-urls-dois-verified', 'Source URLs and DOIs verified', 'Open links and verify DOI, URL, title, and author details against the original publication.', 5),
-  ('no-unattributed-copying', 'No copied paragraph without attribution', 'Scan for any borrowed paragraph or sentence that still needs quotation marks, paraphrasing, or citation.', 6),
-  ('final-originality-review', 'Final paper reviewed for originality', 'Read the paper once more to catch accidental borrowing, patchwriting, or citation gaps before submission.', 7)
+  ('quoted-text-quotation-marks', 'Core literature has been gathered', 'Confirm the project includes the main studies, theories, or references needed for your topic before drafting the final review section.', 1),
+  ('paraphrased-ideas-cited', 'Each paraphrase or claim is tied to a source', 'Make sure every paraphrased idea, summarized finding, or borrowed claim is traceable to the original source.', 2),
+  ('bibliography-included', 'Reference list or bibliography is complete', 'Confirm the paper includes a complete references, works cited, or bibliography section that matches the sources actually used.', 3),
+  ('in-text-citations-checked', 'In-text citations and source details are checked', 'Review author names, years, page numbers, punctuation, and source details so the citation record matches the original publication.', 4),
+  ('source-urls-dois-verified', 'Themes, comparisons, or synthesis are clear', 'Check that the literature review is organized by themes, variables, methods, theories, or debates instead of only listing one source after another.', 5),
+  ('no-unattributed-copying', 'Research gap or contribution is supported', 'Make sure the claimed research gap, limitation, contradiction, or underexplored area is grounded in the sources you actually reviewed.', 6),
+  ('final-originality-review', 'Final RRL and originality review completed', 'Read the paper one more time to catch citation gaps, weak synthesis, accidental borrowing, patchwriting, or unsupported gap claims before submission.', 7)
 on conflict (slug) do update
 set label = excluded.label,
     description = excluded.description,

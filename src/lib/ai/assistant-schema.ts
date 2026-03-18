@@ -8,6 +8,12 @@ export const assistantTaskTypeSchema = z.enum([
   "rewrite_notes",
   "generate_study_questions",
   "resolve_reminder",
+  "discover_literature",
+  "build_rrl_note",
+  "group_sources_by_theme",
+  "build_related_studies_matrix",
+  "generate_rrl_outline",
+  "find_research_gaps",
 ]);
 
 export const assistantRequestSchema = z.object({
@@ -40,6 +46,31 @@ export const assistantRequestSchema = z.object({
       id: z.string().optional(),
       name: z.string(),
       description: z.string().nullable().optional(),
+    })
+    .optional(),
+  collectionContext: z
+    .object({
+      label: z.string(),
+      description: z.string().nullable().optional(),
+      sourceCount: z.number().int().min(0),
+      noteCount: z.number().int().min(0),
+      sources: z.array(
+        z.object({
+          title: z.string(),
+          authors: z.array(z.string()),
+          year: z.number().nullable(),
+          abstract: z.string().nullable(),
+          sourceType: z.string(),
+          tags: z.array(z.string()),
+        }),
+      ),
+      notes: z.array(
+        z.object({
+          title: z.string(),
+          excerpt: z.string(),
+          sourceTitle: z.string().nullable().optional(),
+        }),
+      ),
     })
     .optional(),
   reminderContext: z

@@ -19,7 +19,7 @@ const faqSections = [
       {
         question: "What is CiteMate designed to help with?",
         answer:
-          "CiteMate is built for students and researchers who want one place to save sources, organize notes, generate citations, and keep their writing workflow calmer and more consistent.",
+          "CiteMate is built for students and researchers who want one place to save sources, organize notes, generate citations, and build calmer, more consistent RRL or literature review workflows.",
       },
       {
         question: "What is the best first workflow for a new user?",
@@ -35,6 +35,11 @@ const faqSections = [
         question: "Can I import existing references instead of adding them one by one?",
         answer:
           "Yes. CiteMate supports CSV import with column mapping, preview, duplicate warnings, and default source-type and citation-style selections.",
+      },
+      {
+        question: "Can CiteMate help me find literature before I add it?",
+        answer:
+          "Yes. The Sources area now includes a discovery panel that points users to Google Scholar, Crossref, DOAJ, PubMed, PubMed Central, and OpenAlex so they can find relevant studies before saving them into the workspace.",
       },
     ],
   },
@@ -67,6 +72,11 @@ const faqSections = [
         question: "Does autosave save directly to the database?",
         answer:
           "No. Autosave stores a local draft on the device you are using. Your real source or note record only changes when you explicitly save.",
+      },
+      {
+        question: "Can I organize sources for a literature review and not just by class subject?",
+        answer:
+          "Yes. Subjects still provide the main container, but the assistant can now use a subject-level collection of sources and notes to group studies by theme, build a related studies matrix, and draft an RRL structure.",
       },
     ],
   },
@@ -105,12 +115,17 @@ const faqSections = [
       {
         question: "What does the AI assistant receive when I ask for help?",
         answer:
-          "Only the context you choose for that specific request. You can review and turn off source, note, subject, reminder, or follow-up context before sending a prompt.",
+          "Only the context you choose for that specific request. You can review and turn off source, note, subject, collection, reminder, or follow-up context before sending a prompt.",
       },
       {
         question: "Can I use the AI tools without sharing every note or source?",
         answer:
           "Yes. The per-request controls let you opt out of sending certain context so you can keep the assistant focused only on the material you want included.",
+      },
+      {
+        question: "What RRL tasks can the AI assistant handle now?",
+        answer:
+          "CiteMate now includes AI actions for literature discovery guidance, RRL note building, theme grouping, related studies matrix drafting, RRL outline generation, and research gap finding. These outputs are suggestions that still need your review.",
       },
       {
         question: "Should I paste sensitive personal or confidential content into the AI assistant?",
@@ -160,6 +175,11 @@ const faqSections = [
         question: "Why is metadata lookup not filling my source fields?",
         answer:
           "Metadata lookup depends on a valid DOI or article URL and on the external metadata source returning usable results. If nothing fills in, check the DOI or URL format and be ready to enter missing details manually.",
+      },
+      {
+        question: "Why does research gap finding feel too general sometimes?",
+        answer:
+          "Gap finding is only as good as the sources and notes you provide. If the current subject has too few studies, thin notes, or missing abstracts, the assistant will produce broader and more cautious suggestions instead of strong gap claims.",
       },
       {
         question: "Why did my draft disappear on another device?",

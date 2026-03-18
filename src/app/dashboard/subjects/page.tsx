@@ -1,4 +1,5 @@
 import { deleteSubjectAction } from "@/actions/subjects";
+import { SubjectsAssistantWorkspace } from "@/components/ai/subjects-assistant-workspace";
 import { DeleteButton } from "@/components/app/delete-button";
 import { EmptyState } from "@/components/app/empty-state";
 import { PageHeader } from "@/components/app/page-header";
@@ -9,7 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { getSubjectsData } from "@/lib/data/citemate";
 
 export default async function SubjectsPage() {
-  const { subjects, analytics } = await getSubjectsData();
+  const { subjects, sources, analytics } = await getSubjectsData();
 
   return (
     <div className="space-y-8">
@@ -19,6 +20,9 @@ export default async function SubjectsPage() {
         description="Create categories for courses, seminars, or themes, then assign each source to one or more subjects and track how your research is distributed."
         actions={<SubjectFormDialog />}
       />
+      {subjects.length > 0 ? (
+        <SubjectsAssistantWorkspace subjects={subjects} sources={sources} />
+      ) : null}
       <SubjectAnalyticsSection analytics={analytics} />
       {subjects.length === 0 ? (
         <EmptyState

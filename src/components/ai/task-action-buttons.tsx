@@ -1,6 +1,18 @@
 "use client";
 
-import { BookOpenText, FileQuestion, FileSearch2, ListTree, Sparkles, WandSparkles } from "lucide-react";
+import {
+  Blocks,
+  BookOpenText,
+  Compass,
+  FileQuestion,
+  FileSearch2,
+  ListTree,
+  Rows3,
+  ScanSearch,
+  Sparkles,
+  TableProperties,
+  WandSparkles,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import type { AssistantTaskType } from "@/lib/ai/types";
@@ -36,6 +48,30 @@ const taskConfig: Record<
   resolve_reminder: {
     label: "Help fix this reminder",
     icon: Sparkles,
+  },
+  discover_literature: {
+    label: "Find literature",
+    icon: Compass,
+  },
+  build_rrl_note: {
+    label: "Build RRL note",
+    icon: Blocks,
+  },
+  group_sources_by_theme: {
+    label: "Group by theme",
+    icon: ListTree,
+  },
+  build_related_studies_matrix: {
+    label: "Build studies matrix",
+    icon: TableProperties,
+  },
+  generate_rrl_outline: {
+    label: "Generate RRL outline",
+    icon: Rows3,
+  },
+  find_research_gaps: {
+    label: "Find research gaps",
+    icon: ScanSearch,
   },
 };
 

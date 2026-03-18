@@ -19,6 +19,18 @@ const taskGuidance: Record<AssistantTaskType, string> = {
     "Generate concise study questions from the current notes that help review key ideas and evidence.",
   resolve_reminder:
     "Explain what the current reminder means, name the smallest missing detail needed next, and suggest the next practical fix without inventing facts.",
+  discover_literature:
+    "Suggest database choices, search terms, and Boolean search strings for literature discovery based on the topic or subject context. Prioritize Google Scholar, DOAJ, PubMed, PubMed Central, OpenAlex, and Crossref when relevant. Do not claim that papers were actually searched or retrieved.",
+  build_rrl_note:
+    "Create an RRL-ready source note with sections for summary, methodology, findings, research gap, and relevance to the study. Use only provided metadata, abstract, and notes. Mark unknown details clearly.",
+  group_sources_by_theme:
+    "Group the provided notes and sources into synthesis themes based on concepts, variables, methods, populations, or theories. Emphasize synthesis rather than one-source-at-a-time summaries.",
+  build_related_studies_matrix:
+    "Build a related studies matrix using only the provided context. Compare author or source, year, method, sample or population, findings, and research gap. Use 'Not stated' when details are missing.",
+  generate_rrl_outline:
+    "Turn the provided notes and source context into a literature review outline organized by themes, debates, or variables. Include an introduction, thematic sections, synthesis points, and a transition into the research gap.",
+  find_research_gaps:
+    "Identify repeated limitations, contradictions, underexplored populations, weak methods, and unanswered questions across the provided studies. Distinguish explicit gaps from cautious inference.",
 };
 
 const defaultDisclaimer =
@@ -64,6 +76,41 @@ const applyActionMap: Record<AssistantTaskType, AssistantApplyAction[]> = {
     { type: "use_as_draft", label: "Use as draft" },
     { type: "dismiss", label: "Dismiss" },
   ],
+  discover_literature: [
+    { type: "copy", label: "Copy" },
+    { type: "use_as_draft", label: "Use as draft" },
+    { type: "dismiss", label: "Dismiss" },
+  ],
+  build_rrl_note: [
+    { type: "copy", label: "Copy" },
+    { type: "insert_into_note", label: "Insert into note" },
+    { type: "use_as_draft", label: "Use as draft" },
+    { type: "dismiss", label: "Dismiss" },
+  ],
+  group_sources_by_theme: [
+    { type: "copy", label: "Copy" },
+    { type: "insert_into_note", label: "Insert into note" },
+    { type: "use_as_draft", label: "Use as draft" },
+    { type: "dismiss", label: "Dismiss" },
+  ],
+  build_related_studies_matrix: [
+    { type: "copy", label: "Copy" },
+    { type: "insert_into_note", label: "Insert into note" },
+    { type: "use_as_draft", label: "Use as draft" },
+    { type: "dismiss", label: "Dismiss" },
+  ],
+  generate_rrl_outline: [
+    { type: "copy", label: "Copy" },
+    { type: "insert_into_note", label: "Insert into note" },
+    { type: "use_as_draft", label: "Use as draft" },
+    { type: "dismiss", label: "Dismiss" },
+  ],
+  find_research_gaps: [
+    { type: "copy", label: "Copy" },
+    { type: "insert_into_note", label: "Insert into note" },
+    { type: "use_as_draft", label: "Use as draft" },
+    { type: "dismiss", label: "Dismiss" },
+  ],
 };
 
 export function getAssistantApplyActions(taskType: AssistantTaskType) {
@@ -73,12 +120,14 @@ export function getAssistantApplyActions(taskType: AssistantTaskType) {
 export function buildAssistantSystemPrompt() {
   return [
     "You are CiteMate Research Assistant, an AI helper for academic organization.",
-    "You help students understand source metadata, notes, reminders, and citation differences.",
+    "You help students understand source metadata, notes, reminders, citation differences, and literature review workflows.",
     "You do not replace formal citation validation or source verification.",
     "Never fabricate missing authors, titles, years, publishers, URLs, DOIs, or quotations.",
     "If a fact is missing, say it is unknown and state the smallest missing detail needed.",
     "Keep responses concise, useful, and structured for direct UI display.",
     "When summarizing, clearly separate extracted facts from inferred suggestions.",
+    "When helping with literature reviews, prefer synthesis, comparison, and cautious gap analysis over unsupported certainty.",
+    "Never imply you searched live databases unless the user explicitly provides search results in the context.",
     "When discussing citations, explain limitations and never claim the result is guaranteed correct.",
     "Return valid JSON only with keys: title, content, suggestions, warnings, disclaimer.",
   ].join(" ");
@@ -99,6 +148,7 @@ export function buildAssistantUserPrompt(request: AssistantRequest) {
         source: request.sourceContext ?? null,
         note: request.noteContext ?? null,
         subject: request.subjectContext ?? null,
+        collection: request.collectionContext ?? null,
         reminder: request.reminderContext ?? null,
       },
       userMessage: request.userMessage?.trim() || null,
