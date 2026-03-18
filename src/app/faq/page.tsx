@@ -1,43 +1,182 @@
+import Link from "next/link";
 import type { Metadata } from "next";
 
 import { AppFooter } from "@/components/app/app-footer";
 import { AppLogo } from "@/components/app/app-logo";
+import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
   title: "FAQ | CiteMate",
   description: "Frequently asked questions about using CiteMate.",
 };
 
-const faqItems = [
+const faqSections = [
   {
-    question: "How should I start using CiteMate?",
-    answer:
-      "Start by creating one subject, saving one source, and writing one note linked to that source. Once that flow feels comfortable, use filters, exports, reminders, and the checklist.",
+    title: "Getting Started",
+    description:
+      "The basics for new users who want the quickest path from sign up to a usable research workspace.",
+    items: [
+      {
+        question: "What is CiteMate designed to help with?",
+        answer:
+          "CiteMate is built for students and researchers who want one place to save sources, organize notes, generate citations, and keep their writing workflow calmer and more consistent.",
+      },
+      {
+        question: "What is the best first workflow for a new user?",
+        answer:
+          "Start small: create one subject, add one source, link one note to that source, and then open the citation generator. Once that feels natural, move on to imports, AI help, version history, and exports.",
+      },
+      {
+        question: "Do I need to fill every field when adding a source?",
+        answer:
+          "No. Title, authors, source type, and citation style are the most important starting fields. You can add a DOI, URL, abstract, tags, subjects, and files later as your research set grows.",
+      },
+      {
+        question: "Can I import existing references instead of adding them one by one?",
+        answer:
+          "Yes. CiteMate supports CSV import with column mapping, preview, duplicate warnings, and default source-type and citation-style selections.",
+      },
+    ],
   },
   {
-    question: "Does CiteMate replace checking my citations manually?",
-    answer:
-      "No. CiteMate helps you organize details and format citations, but you should still verify source information and your institution's requirements before submitting work.",
+    title: "Sources, Notes, and Search",
+    description:
+      "How source records, linked notes, search, filtering, and duplicate detection behave inside the app.",
+    items: [
+      {
+        question: "How are sources and notes connected?",
+        answer:
+          "Each note can stay connected to its source so your summaries, analysis, and writing prep remain anchored to the original reference instead of getting separated into disconnected text fragments.",
+      },
+      {
+        question: "What does the search feature look through?",
+        answer:
+          "Search can match source titles, authors, abstracts, DOI, URL, tags, subjects, and linked note text. On the notes side, search can also surface results through related source information.",
+      },
+      {
+        question: "How does duplicate detection work?",
+        answer:
+          "When editing or adding a source, CiteMate warns about matching DOIs, matching URLs, or near-identical titles combined with the same year or overlapping authors. It is a warning, not a hard block, because sometimes similar records are intentionally separate.",
+      },
+      {
+        question: "Can I attach files to a source?",
+        answer:
+          "Yes. You can attach supported files such as PDFs and keep them tied to the source record so your stored reference, notes, and attachment stay together in the same workspace.",
+      },
+      {
+        question: "Does autosave save directly to the database?",
+        answer:
+          "No. Autosave stores a local draft on the device you are using. Your real source or note record only changes when you explicitly save.",
+      },
+    ],
   },
   {
-    question: "What does the AI assistant receive?",
-    answer:
-      "Only the context you choose for that request. You can now review and turn off source, note, subject, reminder, or follow-up context before sending.",
+    title: "Citations and Formatting",
+    description:
+      "How citation generation works, what styles are supported, and where manual review still matters.",
+    items: [
+      {
+        question: "Which citation styles are currently supported?",
+        answer:
+          "CiteMate currently supports APA, MLA, Chicago, Harvard, IEEE, AMA, Vancouver, Turabian, ACS, CSE, OSCOLA, Bluebook, ASA, APSA, and NLM.",
+      },
+      {
+        question: "Does CiteMate replace checking my citations manually?",
+        answer:
+          "No. CiteMate helps structure your metadata and produce formatted citations faster, but you should still verify source details and any course, department, or journal-specific rules before submission.",
+      },
+      {
+        question: "Why might two styles look similar for some sources?",
+        answer:
+          "Some styles overlap heavily for common source types, especially in first-pass implementations for general books, journal articles, websites, and reports. The differences become more specific with discipline-specific edge cases.",
+      },
+      {
+        question: "What if a citation style has special rules for certain source types?",
+        answer:
+          "CiteMate aims to give a strong practical starting point for the supported source types in the app. If your professor, editor, or field uses a specialized rule variation, treat the generated result as a draft to review rather than as the final word.",
+      },
+    ],
   },
   {
-    question: "Can I undo edits to notes or sources?",
-    answer:
-      "Yes. Saved versions are kept for notes and sources, and you can restore an earlier version from the details or note card history controls.",
+    title: "AI, Privacy, and Safety",
+    description:
+      "What the assistant sees, how context controls work, and how to think about sensitive research content.",
+    items: [
+      {
+        question: "What does the AI assistant receive when I ask for help?",
+        answer:
+          "Only the context you choose for that specific request. You can review and turn off source, note, subject, reminder, or follow-up context before sending a prompt.",
+      },
+      {
+        question: "Can I use the AI tools without sharing every note or source?",
+        answer:
+          "Yes. The per-request controls let you opt out of sending certain context so you can keep the assistant focused only on the material you want included.",
+      },
+      {
+        question: "Should I paste sensitive personal or confidential content into the AI assistant?",
+        answer:
+          "Use judgment. CiteMate includes context controls and privacy-aware monitoring, but you should still avoid sending especially sensitive, confidential, or regulated information unless you are sure it is appropriate for your use case.",
+      },
+      {
+        question: "Does the AI always give correct academic advice?",
+        answer:
+          "No. AI output can be useful for brainstorming, summarizing, and explaining differences between citation styles, but it can still be incomplete or mistaken. Always verify important claims, quotations, and final references yourself.",
+      },
+    ],
   },
   {
-    question: "Does autosave publish changes immediately?",
-    answer:
-      "No. Autosave stores a local draft on the device you are using. Your real source or note is only updated when you explicitly save.",
+    title: "Versions, Export, and Account Controls",
+    description:
+      "How to recover from bad edits, back up your work, and manage account-level actions safely.",
+    items: [
+      {
+        question: "Can I undo edits to notes or sources?",
+        answer:
+          "Yes. CiteMate keeps saved version history for notes and sources. You can review earlier snapshots and restore a previous version if a recent edit went in the wrong direction.",
+      },
+      {
+        question: "What should I do before deleting my account?",
+        answer:
+          "Use the workspace export option first. That gives you a user-visible backup of your stored research data before you remove your account.",
+      },
+      {
+        question: "Does the workspace export include everything?",
+        answer:
+          "The export includes structured workspace data such as sources, notes, subjects, checklist progress, and attachment metadata. If you need full offline copies of uploaded files, download important attachments separately as well.",
+      },
+      {
+        question: "Can I reset my password?",
+        answer:
+          "Yes. CiteMate includes password recovery and reset flows so users can request a reset link and choose a new password without needing manual support.",
+      },
+    ],
   },
   {
-    question: "How does duplicate detection work?",
-    answer:
-      "When you edit a source, CiteMate warns about matching DOIs, matching URLs, or near-identical titles with the same year or overlapping authors. It is a warning, not a hard block.",
+    title: "Troubleshooting",
+    description:
+      "Common issues that new users hit and the fastest ways to get unstuck.",
+    items: [
+      {
+        question: "Why is metadata lookup not filling my source fields?",
+        answer:
+          "Metadata lookup depends on a valid DOI or article URL and on the external metadata source returning usable results. If nothing fills in, check the DOI or URL format and be ready to enter missing details manually.",
+      },
+      {
+        question: "Why did my draft disappear on another device?",
+        answer:
+          "Local autosave drafts stay on the device and browser where they were created. They are meant to prevent accidental loss while editing, not to sync across devices.",
+      },
+      {
+        question: "Why can I see a duplicate warning even when I want to save the source?",
+        answer:
+          "Duplicate warnings are advisory. They are there to help you catch accidental duplicate entries, but you can still save if the source is intentionally distinct, such as a different edition or a separate record you truly want to keep.",
+      },
+      {
+        question: "Where should I learn the full workflow from beginning to end?",
+        answer:
+          "The step-by-step tutorial walks through the full process from account setup and subjects to citations, AI help, exports, and settings. Use the tutorial if you want a guided first run.",
+      },
+    ],
   },
 ];
 
@@ -48,7 +187,7 @@ export default function FaqPage() {
       tabIndex={-1}
       className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(15,118,110,0.14),_transparent_38%),linear-gradient(180deg,#fcfaf3_0%,#f3efe4_100%)] text-foreground"
     >
-      <div className="mx-auto flex min-h-screen max-w-4xl flex-col px-4 py-6 sm:px-6 lg:px-8">
+      <div className="mx-auto flex min-h-screen max-w-5xl flex-col px-4 py-6 sm:px-6 lg:px-8">
         <header className="rounded-[2rem] border border-border/70 bg-background/85 px-5 py-5 shadow-lg shadow-teal-950/5 backdrop-blur">
           <AppLogo />
         </header>
@@ -61,19 +200,42 @@ export default function FaqPage() {
               Frequently Asked Questions
             </h1>
             <p className="mt-4 max-w-3xl text-base leading-7 text-muted-foreground">
-              Quick answers for getting started, understanding AI controls,
-              restoring versions, and avoiding duplicate entries.
+              A fuller guide to how CiteMate works, what the AI sees, how
+              citations are generated, and how to protect your work as your
+              research workspace grows.
             </p>
-            <div className="mt-8 space-y-4">
-              {faqItems.map((item) => (
-                <section
-                  key={item.question}
-                  className="rounded-[1.5rem] border border-border/70 bg-secondary/20 p-5"
-                >
-                  <h2 className="text-xl font-semibold">{item.question}</h2>
-                  <p className="mt-2 leading-7 text-muted-foreground">
-                    {item.answer}
-                  </p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Button asChild>
+                <Link href="/tutorial">Read the step-by-step tutorial</Link>
+              </Button>
+              <Button variant="outline" asChild>
+                <Link href="/contact">Contact support</Link>
+              </Button>
+            </div>
+            <div className="mt-8 space-y-8">
+              {faqSections.map((section) => (
+                <section key={section.title} className="space-y-4">
+                  <div className="space-y-2">
+                    <h2 className="font-serif text-3xl tracking-tight">
+                      {section.title}
+                    </h2>
+                    <p className="max-w-3xl text-sm leading-6 text-muted-foreground">
+                      {section.description}
+                    </p>
+                  </div>
+                  <div className="space-y-4">
+                    {section.items.map((item) => (
+                      <div
+                        key={item.question}
+                        className="rounded-[1.5rem] border border-border/70 bg-secondary/20 p-5"
+                      >
+                        <h3 className="text-xl font-semibold">{item.question}</h3>
+                        <p className="mt-2 leading-7 text-muted-foreground">
+                          {item.answer}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
                 </section>
               ))}
             </div>
